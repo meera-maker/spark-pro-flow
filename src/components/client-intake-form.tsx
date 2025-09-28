@@ -50,7 +50,7 @@ export function ClientIntakeForm() {
                   id="brand-name" 
                   placeholder="Enter your brand name" 
                   required 
-                  className="border-2 focus:border-orange"
+                  className="border-2 focus:border-blue"
                 />
               </div>
               
@@ -61,7 +61,7 @@ export function ClientIntakeForm() {
                   type="email" 
                   placeholder="you@company.com" 
                   required 
-                  className="border-2 focus:border-orange"
+                  className="border-2 focus:border-blue"
                 />
               </div>
             </div>
@@ -70,7 +70,7 @@ export function ClientIntakeForm() {
               <div className="space-y-2">
                 <Label htmlFor="creative-type">Creative Type *</Label>
                 <Select required>
-                  <SelectTrigger className="border-2 focus:border-orange">
+                  <SelectTrigger className="border-2 focus:border-blue">
                     <SelectValue placeholder="Select project type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -93,7 +93,7 @@ export function ClientIntakeForm() {
                     <Button
                       variant="outline"
                       className={cn(
-                        "w-full justify-start text-left font-normal border-2 focus:border-orange",
+                        "w-full justify-start text-left font-normal border-2 focus:border-blue",
                         !date && "text-muted-foreground"
                       )}
                     >
@@ -119,7 +119,7 @@ export function ClientIntakeForm() {
               <Textarea 
                 id="brief"
                 placeholder="Describe your project, goals, target audience, style preferences, and any specific requirements..."
-                className="min-h-32 border-2 focus:border-orange"
+                className="min-h-32 border-2 focus:border-blue"
                 required
               />
             </div>
@@ -129,7 +129,7 @@ export function ClientIntakeForm() {
               <Textarea 
                 id="reference-links"
                 placeholder="Share any inspiration links, competitor examples, or style references (one per line)"
-                className="border-2 focus:border-orange"
+                className="border-2 focus:border-blue"
               />
             </div>
 
@@ -138,7 +138,7 @@ export function ClientIntakeForm() {
               <Input 
                 id="drive-folder" 
                 placeholder="https://drive.google.com/..." 
-                className="border-2 focus:border-orange"
+                className="border-2 focus:border-blue"
               />
               <p className="text-sm text-muted-foreground">
                 Share any assets, brand guidelines, or existing materials
@@ -148,7 +148,7 @@ export function ClientIntakeForm() {
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="w-full gradient-orange text-white hover:opacity-90 transition-opacity py-6 text-lg font-semibold"
+              className="w-full gradient-blue text-white hover:opacity-90 transition-opacity py-6 text-lg font-semibold"
             >
               {isSubmitting ? "Submitting..." : "Submit Project"}
             </Button>

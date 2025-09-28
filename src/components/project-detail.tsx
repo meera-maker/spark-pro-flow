@@ -95,7 +95,7 @@ export function ProjectDetail() {
             <Upload className="h-4 w-4 mr-2" />
             Submit Draft
           </Button>
-          <Button className="gradient-orange text-white">
+          <Button className="gradient-blue text-white">
             <Send className="h-4 w-4 mr-2" />
             Send to Client
           </Button>
@@ -126,7 +126,7 @@ export function ProjectDetail() {
                         href={link} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm text-orange hover:underline"
+                        className="flex items-center gap-2 text-sm text-blue hover:underline"
                       >
                         <ExternalLink className="h-3 w-3" />
                         {link}
@@ -142,7 +142,7 @@ export function ProjectDetail() {
                     href={mockProject.driveFolderUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-orange hover:underline"
+                    className="inline-flex items-center gap-2 text-sm text-blue hover:underline"
                   >
                     <ExternalLink className="h-3 w-3" />
                     Google Drive Assets

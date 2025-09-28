@@ -76,7 +76,7 @@ const Index = () => {
           <div className="animate-fade-in">
             <h1 className="text-5xl md:text-6xl font-bold text-primary mb-6">
               Creative Project Management
-              <span className="block gradient-orange bg-clip-text text-transparent">
+              <span className="block gradient-blue bg-clip-text text-transparent">
                 Made Simple
               </span>
             </h1>
@@ -88,7 +88,7 @@ const Index = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
               <Button 
                 size="lg" 
-                className="gradient-orange text-white hover:opacity-90 px-8 py-4 text-lg"
+                className="gradient-blue text-white hover:opacity-90 px-8 py-4 text-lg"
                 onClick={() => setCurrentView("intake")}
               >
                 Start New Project
@@ -96,14 +96,14 @@ const Index = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="px-8 py-4 text-lg border-2 hover:border-orange hover:text-orange"
+                className="px-8 py-4 text-lg border-2 hover:border-blue hover:text-blue"
                 onClick={() => setCurrentView("dashboard")}
               >
                 View Dashboard
               </Button>
             </div>
 
-            <Badge variant="outline" className="text-orange border-orange/30 bg-orange/5">
+            <Badge variant="outline" className="text-blue border-blue/30 bg-blue/5">
               ⚡ Connect Supabase for full functionality - authentication, database, notifications
             </Badge>
           </div>
@@ -215,7 +215,7 @@ const Index = () => {
               variant="outline" 
               size="lg"
               onClick={() => setCurrentView("intake")}
-              className="border-2 hover:border-orange hover:text-orange"
+              className="border-2 hover:border-blue hover:text-blue"
             >
               📝 Try Client Intake Form
             </Button>
@@ -223,7 +223,7 @@ const Index = () => {
               variant="outline" 
               size="lg"
               onClick={() => setCurrentView("dashboard")}
-              className="border-2 hover:border-orange hover:text-orange"
+              className="border-2 hover:border-blue hover:text-blue"
             >
               📊 View Project Dashboard
             </Button>
@@ -231,7 +231,7 @@ const Index = () => {
               variant="outline" 
               size="lg"
               onClick={() => setCurrentView("project-detail")}
-              className="border-2 hover:border-orange hover:text-orange"
+              className="border-2 hover:border-blue hover:text-blue"
             >
               🔍 See Project Details
             </Button>

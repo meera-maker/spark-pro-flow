@@ -90,7 +90,7 @@ export function ProjectsDashboard() {
           <p className="text-muted-foreground">Manage all creative projects in one place</p>
         </div>
         
-        <Button className="gradient-orange text-white hover:opacity-90">
+        <Button className="gradient-blue text-white hover:opacity-90">
           <Plus className="h-4 w-4 mr-2" />
           New Project
         </Button>
@@ -230,7 +230,7 @@ export function ProjectsDashboard() {
                     <TableCell>{project.lead}</TableCell>
                     <TableCell>
                       {project.designer === "Unassigned" ? (
-                        <Badge variant="outline" className="text-orange border-orange">
+                        <Badge variant="outline" className="text-blue border-blue">
                           Unassigned
                         </Badge>
                       ) : (

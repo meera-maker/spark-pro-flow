@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* SparkPro Creative Design System - Clean, modern theme with charcoal + electric orange */
+/* SparkPro Creative Design System - Clean, modern theme with blue and white */
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
+    --background: 0 0% 100%;
     --foreground: 210 11% 15%;
 
     --card: 0 0% 100%;
@@ -15,9 +15,9 @@
     --popover: 0 0% 100%;
     --popover-foreground: 210 11% 15%;
 
-    /* Charcoal primary with electric orange accent */
-    --primary: 210 11% 15%;
-    --primary-foreground: 0 0% 98%;
+    /* Blue primary with white accents */
+    --primary: 213 94% 68%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 6% 93%;
     --secondary-foreground: 210 11% 15%;
@@ -25,20 +25,20 @@
     --muted: 210 6% 96%;
     --muted-foreground: 210 6% 46%;
 
-    /* Electric orange accent */
-    --accent: 24 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    /* Bright blue accent */
+    --accent: 213 94% 68%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Electric orange for highlights */
-    --orange: 24 100% 50%;
-    --orange-foreground: 0 0% 98%;
+    /* Blue for highlights */
+    --blue: 213 94% 68%;
+    --blue-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 210 6% 90%;
     --input: 210 6% 96%;
-    --ring: 24 100% 50%;
+    --ring: 213 94% 68%;
 
     --radius: 0.5rem;
 
@@ -69,8 +69,8 @@
     --popover: 210 11% 9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 210 11% 15%;
+    --primary: 213 94% 68%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 11% 12%;
     --secondary-foreground: 0 0% 98%;
@@ -78,18 +78,18 @@
     --muted: 210 11% 12%;
     --muted-foreground: 210 6% 65%;
 
-    --accent: 24 100% 50%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 213 94% 68%;
+    --accent-foreground: 0 0% 100%;
 
-    --orange: 24 100% 50%;
-    --orange-foreground: 0 0% 98%;
+    --blue: 213 94% 68%;
+    --blue-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 210 11% 15%;
     --input: 210 11% 15%;
-    --ring: 24 100% 50%;
+    --ring: 213 94% 68%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -136,11 +136,11 @@
   }
 
   /* Gradient utilities */
-  .gradient-orange {
-    background: linear-gradient(135deg, hsl(var(--orange)), hsl(24 100% 60%));
+  .gradient-blue {
+    background: linear-gradient(135deg, hsl(var(--blue)), hsl(213 94% 78%));
   }
 
   .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(210 11% 25%));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(213 94% 78%));
   }
 }
