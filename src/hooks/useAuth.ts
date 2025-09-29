@@ -43,7 +43,7 @@ export const useAuth = () => {
         .from('users')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       if (error) throw error
       setProfile(data)
@@ -89,7 +89,7 @@ export const useAuth = () => {
       .update(updates)
       .eq('id', user.id)
       .select()
-      .single()
+      .maybeSingle()
 
     if (!error && data) {
       setProfile(data)

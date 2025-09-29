@@ -269,6 +269,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_user_role: {
+        Args: { _required_role: string; _user_id: string }
+        Returns: boolean
+      }
       generate_project_code: {
         Args: Record<PropertyKey, never>
         Returns: string

@@ -80,6 +80,15 @@ export function ProjectsDashboard() {
   const [searchTerm, setSearchTerm] = useState("")
   const { currentUser, getStatusColor, users } = useWorkflow()
 
+  // Handle loading state
+  if (!currentUser) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading user data...</div>
+      </div>
+    )
+  }
+
   const filteredProjects = mockProjects.filter(project => {
     const matchesStatus = statusFilter === "all" || project.workflowStatus === statusFilter
     const matchesSearch = project.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
