@@ -9,8 +9,8 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Clients from "./pages/Clients";
 import Team from "./pages/Team";
-import Members from "./pages/Members";
-import Billing from "./pages/Billing";
+// import Members from "./pages/Members";
+// import Billing from "./pages/Billing";
 import Intake from "./pages/Intake";
 import NotFound from "./pages/NotFound";
 
@@ -49,16 +49,20 @@ const App = () => (
               <Team />
             </ProtectedRoute>
           } />
+          {/* Temporarily disabled until schema matches
           <Route path="/members" element={
             <ProtectedRoute>
               <Members />
             </ProtectedRoute>
           } />
+          */}
+          {/* Temporarily disabled until schema matches
           <Route path="/billing" element={
             <ProtectedRoute>
               <Billing />
             </ProtectedRoute>
           } />
+          */}
           <Route path="/intake" element={
             <ProtectedRoute>
               <Intake />
