@@ -3,7 +3,62 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+// Create supabase client or mock if not connected
+let supabase: any
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase environment variables not found. Please ensure Supabase is properly connected in your Lovable project.')
+  console.error('Missing:', {
+    VITE_SUPABASE_URL: !!supabaseUrl,
+    VITE_SUPABASE_ANON_KEY: !!supabaseAnonKey
+  })
+  
+  // Create a comprehensive mock client for when Supabase isn't connected
+  supabase = {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: new Error('Supabase not connected') }),
+      onAuthStateChange: (callback: any) => ({ 
+        data: { 
+          subscription: { 
+            unsubscribe: () => {} 
+          } 
+        } 
+      }),
+      signInWithPassword: (credentials: any) => Promise.resolve({ data: null, error: new Error('Supabase not connected') }),
+      signUp: (credentials: any) => Promise.resolve({ data: null, error: new Error('Supabase not connected') }),
+      signOut: () => Promise.resolve({ error: new Error('Supabase not connected') }),
+      admin: {
+        createUser: (userData: any) => Promise.resolve({ data: null, error: new Error('Supabase not connected') })
+      }
+    },
+    from: (table: string) => ({
+      select: (columns?: string) => ({
+        eq: (column: string, value: any) => ({
+          single: () => Promise.resolve({ data: null, error: new Error('Supabase not connected') }),
+          order: (column: string, options?: any) => Promise.resolve({ data: [], error: new Error('Supabase not connected') }),
+          limit: (count: number) => Promise.resolve({ data: [], error: new Error('Supabase not connected') })
+        }),
+        order: (column: string, options?: any) => Promise.resolve({ data: [], error: new Error('Supabase not connected') }),
+        limit: (count: number) => Promise.resolve({ data: [], error: new Error('Supabase not connected') })
+      }),
+      insert: (data: any) => Promise.resolve({ data: null, error: new Error('Supabase not connected') }),
+      update: (data: any) => ({
+        eq: (column: string, value: any) => ({
+          select: () => ({
+            single: () => Promise.resolve({ data: null, error: new Error('Supabase not connected') })
+          })
+        })
+      }),
+      delete: () => ({
+        eq: (column: string, value: any) => Promise.resolve({ data: null, error: new Error('Supabase not connected') })
+      })
+    })
+  }
+} else {
+  supabase = createClient(supabaseUrl, supabaseAnonKey)
+}
+
+export { supabase }
 
 export type Database = {
   public: {
