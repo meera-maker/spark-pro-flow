@@ -1,7 +1,9 @@
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import { useAuth } from "@/hooks/useAuth"
+import { useToast } from "@/hooks/use-toast"
 
 interface NavigationProps {
   className?: string
@@ -9,8 +11,20 @@ interface NavigationProps {
 
 export function Navigation({ className }: NavigationProps) {
   const location = useLocation()
+  const { user, profile, signOut } = useAuth()
+  const navigate = useNavigate()
+  const { toast } = useToast()
   
   const isActive = (path: string) => location.pathname === path
+
+  const handleSignOut = async () => {
+    await signOut()
+    toast({
+      title: 'Signed out',
+      description: 'You have been signed out successfully'
+    })
+    navigate('/login')
+  }
   
   return (
     <nav className={cn("border-b bg-card", className)}>
@@ -40,17 +54,25 @@ export function Navigation({ className }: NavigationProps) {
               </Link>
               <Link to="/team">
                 <Button variant="ghost" className={isActive('/team') ? "text-blue" : "text-muted-foreground hover:text-blue"}>
-                  Team
+                  Management
                 </Button>
               </Link>
             </div>
           </div>
           
           <div className="flex items-center space-x-4">
-            <Badge variant="secondary" className="bg-blue/10 text-blue border-blue/20">
-              Connect Supabase for Full Features
-            </Badge>
-            <Button variant="outline">Sign In</Button>
+            {user && profile && (
+              <div className="hidden md:block text-sm text-muted-foreground">
+                {profile.name} <span className="text-xs">({profile.role})</span>
+              </div>
+            )}
+            {user ? (
+              <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+            ) : (
+              <Button variant="outline" asChild>
+                <Link to="/login">Sign In</Link>
+              </Button>
+            )}
           </div>
         </div>
       </div>
