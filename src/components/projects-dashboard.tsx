@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -216,7 +217,14 @@ export function ProjectsDashboard() {
                 const urgency = getDeadlineUrgency(project.deadline)
                 return (
                   <TableRow key={project.id} className="hover:bg-muted/50">
-                    <TableCell className="font-medium text-primary">{project.id}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link 
+                        to={`/projects/${project.id}`} 
+                        className="text-primary hover:text-primary/80 font-medium transition-colors"
+                      >
+                        {project.id}
+                      </Link>
+                    </TableCell>
                     <TableCell>{project.client}</TableCell>
                     <TableCell>{project.creativeType}</TableCell>
                     <TableCell>
