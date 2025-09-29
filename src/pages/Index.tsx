@@ -1,71 +1,10 @@
-import { useState } from "react"
 import { Navigation } from "@/components/ui/navigation"
-import { ClientIntakeForm } from "@/components/client-intake-form"
-import { ProjectsDashboard } from "@/components/projects-dashboard"
-import { ProjectDetail } from "@/components/project-detail"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-
-type View = "home" | "intake" | "dashboard" | "project-detail"
+import { Link } from "react-router-dom"
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<View>("home")
-
-  if (currentView === "intake") {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto py-8">
-          <Button 
-            variant="ghost" 
-            onClick={() => setCurrentView("home")}
-            className="mb-4"
-          >
-            ← Back to Home
-          </Button>
-          <ClientIntakeForm />
-        </div>
-      </div>
-    )
-  }
-
-  if (currentView === "dashboard") {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => setCurrentView("home")}
-            className="m-4"
-          >
-            ← Back to Home
-          </Button>
-          <ProjectsDashboard />
-        </div>
-      </div>
-    )
-  }
-
-  if (currentView === "project-detail") {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="container mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => setCurrentView("dashboard")}
-            className="m-4"
-          >
-            ← Back to Dashboard
-          </Button>
-          <ProjectDetail />
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -86,21 +25,23 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button 
-                size="lg" 
-                className="gradient-blue text-white hover:opacity-90 px-8 py-4 text-lg"
-                onClick={() => setCurrentView("intake")}
-              >
-                Start New Project
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="px-8 py-4 text-lg border-2 hover:border-blue hover:text-blue"
-                onClick={() => setCurrentView("dashboard")}
-              >
-                View Dashboard
-              </Button>
+              <Link to="/intake">
+                <Button 
+                  size="lg" 
+                  className="gradient-blue text-white hover:opacity-90 px-8 py-4 text-lg"
+                >
+                  Start New Project
+                </Button>
+              </Link>
+              <Link to="/dashboard">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="px-8 py-4 text-lg border-2 hover:border-blue hover:text-blue"
+                >
+                  View Dashboard
+                </Button>
+              </Link>
             </div>
 
             <Badge variant="outline" className="text-blue border-blue/30 bg-blue/5">
@@ -211,30 +152,33 @@ const Index = () => {
         <div className="container mx-auto text-center">
           <h2 className="text-3xl font-bold text-primary mb-8">Explore the Platform</h2>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => setCurrentView("intake")}
-              className="border-2 hover:border-blue hover:text-blue"
-            >
-              📝 Try Client Intake Form
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => setCurrentView("dashboard")}
-              className="border-2 hover:border-blue hover:text-blue"
-            >
-              📊 View Project Dashboard
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => setCurrentView("project-detail")}
-              className="border-2 hover:border-blue hover:text-blue"
-            >
-              🔍 See Project Details
-            </Button>
+            <Link to="/intake">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-2 hover:border-blue hover:text-blue"
+              >
+                📝 Try Client Intake Form
+              </Button>
+            </Link>
+            <Link to="/projects">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-2 hover:border-blue hover:text-blue"
+              >
+                📊 View Project Dashboard
+              </Button>
+            </Link>
+            <Link to="/projects/1">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-2 hover:border-blue hover:text-blue"
+              >
+                🔍 See Project Details
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
