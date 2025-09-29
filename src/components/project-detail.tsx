@@ -1,34 +1,81 @@
 import { useState } from "react"
+import { useParams } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
-import { ProjectStatusBadge } from "./project-status-badge"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { WorkflowTimeline } from "@/components/workflow/workflow-timeline"
+import { StatusActions } from "@/components/workflow/status-actions"
+import { NotificationsPanel } from "@/components/workflow/notifications-panel"
+import { useWorkflow } from "@/hooks/useWorkflow"
+import { WorkflowStatus, WorkflowStep, Notification } from "@/types/workflow"
 import { 
   Calendar, 
   User, 
   FileText, 
   Upload, 
   Send, 
-  UserPlus, 
   MessageCircle,
   ExternalLink,
   Clock,
   Download
 } from "lucide-react"
 
-// Mock project data
+// Mock workflow steps
+const mockWorkflowSteps: WorkflowStep[] = [
+  {
+    id: "step-1",
+    status: "intake",
+    assignedTo: "user-1",
+    assignedBy: "user-1",
+    timestamp: new Date("2024-01-01T09:00:00"),
+    notes: "New project received from client intake form"
+  },
+  {
+    id: "step-2", 
+    status: "assigned-to-cs",
+    assignedTo: "user-2",
+    assignedBy: "user-1",
+    timestamp: new Date("2024-01-01T10:15:00"),
+    notes: "Assigned to CS team for initial client communication"
+  },
+  {
+    id: "step-3",
+    status: "assigned-to-design-head", 
+    assignedTo: "user-3",
+    assignedBy: "user-2",
+    timestamp: new Date("2024-01-02T14:30:00"),
+    notes: "Client brief confirmed, ready for design assignment"
+  },
+  {
+    id: "step-4",
+    status: "assigned-to-designer",
+    assignedTo: "user-4", 
+    assignedBy: "user-3",
+    timestamp: new Date("2024-01-02T16:45:00"),
+    notes: "Assigned to Maria Rodriguez for logo design work"
+  },
+  {
+    id: "step-5",
+    status: "in-design",
+    assignedTo: "user-4",
+    assignedBy: "user-4", 
+    timestamp: new Date("2024-01-03T09:00:00"),
+    notes: "Started working on initial logo concepts"
+  }
+]
+
+// Mock project data with workflow
 const mockProject = {
   id: "SP001",
   client: "TechCorp Solutions", 
   clientEmail: "sarah@techcorp.com",
   creativeType: "Brand Identity",
   deadline: "2024-01-15",
-  lead: "Alex Chen",
-  designer: "Maria Rodriguez",
-  status: "In Progress" as const,
+  workflowStatus: "in-design" as WorkflowStatus,
+  currentAssignee: "user-4",
   revisionCount: 2,
   brief: "We need a complete brand identity for our new fintech startup. The brand should convey trust, innovation, and accessibility. We're targeting young professionals aged 25-40 who are tech-savvy but want simplified financial tools. The aesthetic should be modern, clean, and professional while remaining approachable.",
   referenceLinks: [
@@ -70,8 +117,53 @@ const mockRevisions = [
   }
 ]
 
+// Mock notifications
+const mockNotifications: Notification[] = [
+  {
+    type: "assignment",
+    message: "You have been assigned to project SP001 - TechCorp Solutions",
+    timestamp: new Date("2024-01-02T16:45:00"),
+    read: false,
+    userId: "user-4"
+  },
+  {
+    type: "revision",
+    message: "Client has requested revisions for project SP001",
+    timestamp: new Date("2024-01-04T11:20:00"), 
+    read: true,
+    userId: "user-4"
+  }
+]
+
 export function ProjectDetail() {
+  const { projectId } = useParams()
   const [revisionNote, setRevisionNote] = useState("")
+  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
+  const { currentUser, getStatusColor, users } = useWorkflow()
+
+  const handleStatusChange = (newStatus: WorkflowStatus, assignedTo?: string, notes?: string) => {
+    console.log(`Status changing to: ${newStatus}, assigned to: ${assignedTo}`, notes)
+    // In real app, this would make an API call to update the project workflow
+  }
+
+  const handleMarkAsRead = (notificationId: string) => {
+    setNotifications(prev => 
+      prev.map(n => n.message === notificationId ? { ...n, read: true } : n)
+    )
+  }
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+  }
+
+  const getUserName = (userId: string) => {
+    const user = users.find(u => u.id === userId)
+    return user?.name || 'Unknown User'
+  }
+
+  const formatWorkflowStatus = (status: WorkflowStatus) => {
+    return status.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  }
 
   return (
     <div className="p-6 space-y-6 animate-fade-in max-w-6xl mx-auto">
@@ -80,25 +172,24 @@ export function ProjectDetail() {
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold text-primary">{mockProject.id}</h1>
-            <ProjectStatusBadge status={mockProject.status} />
+            <Badge className={getStatusColor(mockProject.workflowStatus)}>
+              {formatWorkflowStatus(mockProject.workflowStatus)}
+            </Badge>
           </div>
           <p className="text-xl text-muted-foreground">{mockProject.client}</p>
           <p className="text-sm text-muted-foreground">{mockProject.creativeType}</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Currently assigned to: <span className="font-medium">{getUserName(mockProject.currentAssignee)}</span>
+          </p>
         </div>
         
         <div className="flex gap-2">
-          <Button variant="outline">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Assign Designer
-          </Button>
-          <Button variant="outline">
-            <Upload className="h-4 w-4 mr-2" />
-            Submit Draft
-          </Button>
-          <Button className="gradient-blue text-white">
-            <Send className="h-4 w-4 mr-2" />
-            Send to Client
-          </Button>
+          <StatusActions
+            projectId={mockProject.id}
+            currentStatus={mockProject.workflowStatus}
+            currentAssignee={mockProject.currentAssignee}
+            onStatusChange={handleStatusChange}
+          />
         </div>
       </div>
 
@@ -151,6 +242,9 @@ export function ProjectDetail() {
               )}
             </CardContent>
           </Card>
+
+          {/* Workflow Timeline */}
+          <WorkflowTimeline steps={mockWorkflowSteps} />
 
           {/* Revision History */}
           <Card>
@@ -216,6 +310,13 @@ export function ProjectDetail() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Notifications */}
+          <NotificationsPanel
+            notifications={notifications}
+            onMarkAsRead={handleMarkAsRead}
+            onMarkAllAsRead={handleMarkAllAsRead}
+          />
+
           {/* Project Info */}
           <Card>
             <CardHeader>
@@ -235,16 +336,8 @@ export function ProjectDetail() {
               <div className="flex items-center gap-3">
                 <User className="h-4 w-4 text-muted-foreground" />
                 <div>
-                  <p className="text-sm font-medium">Project Lead</p>
-                  <p className="text-sm text-muted-foreground">{mockProject.lead}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">Designer</p>
-                  <p className="text-sm text-muted-foreground">{mockProject.designer}</p>
+                  <p className="text-sm font-medium">Assigned To</p>
+                  <p className="text-sm text-muted-foreground">{getUserName(mockProject.currentAssignee)}</p>
                 </div>
               </div>
               
