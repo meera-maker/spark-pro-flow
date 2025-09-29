@@ -1,12 +1,12 @@
 import { Navigation } from "@/components/ui/navigation"
-import { ProjectsDashboard } from "@/components/projects-dashboard"
+import { DashboardStats } from "@/components/dashboard-stats"
 
 const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="container mx-auto py-8">
-        <ProjectsDashboard />
+        <DashboardStats />
       </div>
     </div>
   )
