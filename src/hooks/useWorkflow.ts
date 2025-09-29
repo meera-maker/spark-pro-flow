@@ -1,34 +1,44 @@
 import { useState, useEffect } from 'react'
 import { WorkflowStatus, ProjectWorkflow, User, UserRole } from '@/types/workflow'
+import { supabase, Database } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
 
-// Mock current user - in real app, this would come from auth
-const getCurrentUser = (): User => ({
-  id: 'user-1',
-  name: 'John Doe',
-  email: 'john@sparkpro.com',
-  role: 'senior-cs' // Change this to test different roles
-})
-
-// Mock users data
-const mockUsers: User[] = [
-  { id: 'user-1', name: 'John Doe', email: 'john@sparkpro.com', role: 'senior-cs' },
-  { id: 'user-2', name: 'Sarah Smith', email: 'sarah@sparkpro.com', role: 'cs' },
-  { id: 'user-3', name: 'Mike Johnson', email: 'mike@sparkpro.com', role: 'design-head' },
-  { id: 'user-4', name: 'Lisa Chen', email: 'lisa@sparkpro.com', role: 'designer' },
-  { id: 'user-5', name: 'David Brown', email: 'david@sparkpro.com', role: 'designer' },
-  { id: 'user-6', name: 'Emma Wilson', email: 'emma@sparkpro.com', role: 'qc' },
-  { id: 'user-7', name: 'Admin User', email: 'admin@sparkpro.com', role: 'admin' }
-]
+type Profile = Database['public']['Tables']['profiles']['Row']
 
 export const useWorkflow = () => {
-  const [currentUser] = useState<User>(getCurrentUser)
-  const [users] = useState<User[]>(mockUsers)
+  const { profile } = useAuth()
+  const [users, setUsers] = useState<Profile[]>([])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [])
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('is_active', true)
+
+      if (error) throw error
+      setUsers(data || [])
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
+  }
+
+  const currentUser = profile ? {
+    id: profile.id,
+    name: profile.full_name || 'User',
+    email: profile.email,
+    role: profile.role as UserRole
+  } : null
   
-  const getUsersByRole = (role: UserRole): User[] => {
+  const getUsersByRole = (role: UserRole): Profile[] => {
     return users.filter(user => user.role === role)
   }
   
-  const getNextAssignees = (currentStatus: WorkflowStatus): User[] => {
+  const getNextAssignees = (currentStatus: WorkflowStatus): Profile[] => {
     switch (currentStatus) {
       case 'intake':
         return getUsersByRole('cs')

@@ -13,7 +13,7 @@ export function WorkflowTimeline({ steps }: WorkflowTimelineProps) {
   
   const getUserName = (userId: string) => {
     const user = users.find(u => u.id === userId)
-    return user?.name || 'Unknown User'
+    return user?.full_name || 'Unknown User'
   }
   
   const formatStatus = (status: string) => {

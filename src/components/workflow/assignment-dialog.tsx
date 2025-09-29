@@ -61,7 +61,7 @@ export function AssignmentDialog({ projectId, currentStatus, onAssign, children 
               <SelectContent>
                 {nextAssignees.map((user) => (
                   <SelectItem key={user.id} value={user.id}>
-                    {user.name} ({user.role.replace('-', ' ')})
+                    {user.full_name || 'User'} ({user.role.replace('-', ' ')})
                   </SelectItem>
                 ))}
               </SelectContent>

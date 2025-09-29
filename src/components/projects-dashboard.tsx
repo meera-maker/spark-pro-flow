@@ -105,7 +105,7 @@ export function ProjectsDashboard() {
 
   const getUserName = (userId: string) => {
     const user = users.find(u => u.id === userId)
-    return user?.name || 'Unassigned'
+    return user?.full_name || 'Unassigned'
   }
 
   const formatWorkflowStatus = (status: WorkflowStatus) => {
