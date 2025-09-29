@@ -14,10 +14,10 @@ interface StatusActionsProps {
 export function StatusActions({ projectId, currentStatus, currentAssignee, onStatusChange }: StatusActionsProps) {
   const { currentUser } = useWorkflow()
   
-  const isCurrentAssignee = currentUser.id === currentAssignee
-  const isQC = currentUser.role === 'qc'
-  const isDesigner = currentUser.role === 'designer'
-  const isCS = currentUser.role === 'cs'
+  const isCurrentAssignee = currentUser?.id === currentAssignee
+  const isQC = currentUser?.role === 'QC'
+  const isDesigner = currentUser?.role === 'Designer'
+  const isLead = currentUser?.role === 'Lead'
   
   const handleAssignment = (userId: string, notes?: string) => {
     let newStatus: WorkflowStatus
@@ -90,8 +90,8 @@ export function StatusActions({ projectId, currentStatus, currentAssignee, onSta
         </>
       )}
       
-      {/* CS actions */}
-      {isCS && isCurrentAssignee && currentStatus === 'qc-approved' && (
+      {/* Lead actions */}
+      {isLead && isCurrentAssignee && currentStatus === 'qc-approved' && (
         <Button 
           onClick={() => handleStatusUpdate('sent-to-client')}
           className="gap-2"
@@ -101,7 +101,7 @@ export function StatusActions({ projectId, currentStatus, currentAssignee, onSta
         </Button>
       )}
       
-      {isCS && isCurrentAssignee && currentStatus === 'sent-to-client' && (
+      {isLead && isCurrentAssignee && currentStatus === 'sent-to-client' && (
         <>
           <Button 
             onClick={() => handleStatusUpdate('client-approved')}

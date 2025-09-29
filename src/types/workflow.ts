@@ -1,4 +1,4 @@
-export type UserRole = 'senior-cs' | 'cs' | 'design-head' | 'designer' | 'qc' | 'admin'
+export type UserRole = 'Admin' | 'Lead' | 'Designer' | 'QC' | 'CS'
 
 export type WorkflowStatus = 
   | 'intake' 

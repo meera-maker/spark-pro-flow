@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
 import Clients from "./pages/Clients";
 import Team from "./pages/Team";
+import Workflow from "./pages/Workflow";
 import Intake from "./pages/Intake";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +48,11 @@ const App = () => (
           <Route path="/team" element={
             <ProtectedRoute>
               <Team />
+            </ProtectedRoute>
+          } />
+          <Route path="/workflow" element={
+            <ProtectedRoute>
+              <Workflow />
             </ProtectedRoute>
           } />
           <Route path="/intake" element={<Intake />} />

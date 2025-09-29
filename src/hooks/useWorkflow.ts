@@ -41,18 +41,18 @@ export const useWorkflow = () => {
   const getNextAssignees = (currentStatus: WorkflowStatus): Profile[] => {
     switch (currentStatus) {
       case 'intake':
-        return getUsersByRole('cs')
+        return getUsersByRole('Lead')
       case 'assigned-to-cs':
-        return getUsersByRole('design-head')
+        return getUsersByRole('Lead')
       case 'assigned-to-design-head':
-        return getUsersByRole('designer')
+        return getUsersByRole('Designer')
       case 'in-design':
       case 'design-complete':
-        return getUsersByRole('qc')
+        return getUsersByRole('QC')
       case 'qc-revision-needed':
-        return getUsersByRole('designer')
+        return getUsersByRole('Designer')
       case 'qc-approved':
-        return getUsersByRole('cs')
+        return getUsersByRole('Lead')
       default:
         return []
     }
@@ -60,15 +60,13 @@ export const useWorkflow = () => {
   
   const canAssign = (status: WorkflowStatus, userRole: UserRole): boolean => {
     switch (userRole) {
-      case 'senior-cs':
-        return status === 'intake'
-      case 'cs':
-        return status === 'assigned-to-cs'
-      case 'design-head':
-        return status === 'assigned-to-design-head'
-      case 'qc':
+      case 'Lead':
+        return status === 'intake' || status === 'assigned-to-cs' || status === 'qc-approved'
+      case 'Designer':
+        return false // Designers don't assign, they complete work
+      case 'QC':
         return status === 'design-complete' || status === 'in-qc'
-      case 'admin':
+      case 'Admin':
         return true
       default:
         return false
