@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
-import { Database } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
+import { Database } from '@/integrations/supabase/types'
 
-type Profile = Database['public']['Tables']['profiles']['Row']
+type Profile = Database['public']['Tables']['users']['Row']
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -40,7 +40,7 @@ export const useAuth = () => {
   const fetchProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
         .eq('id', userId)
         .single()
@@ -68,7 +68,7 @@ export const useAuth = () => {
       password,
       options: {
         data: {
-          full_name: fullName,
+          name: fullName,
           role: role
         }
       }
@@ -81,11 +81,11 @@ export const useAuth = () => {
     return { error }
   }
 
-  const updateProfile = async (updates: Database['public']['Tables']['profiles']['Update']) => {
+  const updateProfile = async (updates: Database['public']['Tables']['users']['Update']) => {
     if (!user) return { error: new Error('No user logged in') }
     
     const { data, error } = await supabase
-      .from('profiles')
+      .from('users')
       .update(updates)
       .eq('id', user.id)
       .select()

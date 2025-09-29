@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { WorkflowStatus, ProjectWorkflow, User, UserRole } from '@/types/workflow'
-import { supabase, Database } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
+import { Database } from '@/integrations/supabase/types'
 import { useAuth } from '@/hooks/useAuth'
 
-type Profile = Database['public']['Tables']['profiles']['Row']
+type Profile = Database['public']['Tables']['users']['Row']
 
 export const useWorkflow = () => {
   const { profile } = useAuth()
@@ -16,9 +17,8 @@ export const useWorkflow = () => {
   const fetchUsers = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('users')
         .select('*')
-        .eq('is_active', true)
 
       if (error) throw error
       setUsers(data || [])
@@ -29,7 +29,7 @@ export const useWorkflow = () => {
 
   const currentUser = profile ? {
     id: profile.id,
-    name: profile.full_name || 'User',
+    name: profile.name || 'User',
     email: profile.email,
     role: profile.role as UserRole
   } : null
