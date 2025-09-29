@@ -271,60 +271,124 @@ export type Database = {
       }
       projects: {
         Row: {
+          account: string | null
+          additional_tasks: string | null
           brief: string
+          business_unit: string | null
           client_email: string
           client_name: string
+          content_hours: number | null
+          coordinator_id: string | null
+          copy_text: string | null
           created_at: string | null
           creative_type: string
           deadline: string
           designer_id: string | null
+          details: string | null
           drive_folder_url: string | null
+          format: string | null
           id: string
+          image_editing_manipulation: string | null
+          image_purchase: string | null
           lead_id: string | null
+          poc: string | null
+          portal_link: string | null
           preview_expires_at: string | null
           preview_token: string | null
           project_code: string
+          project_details: string | null
+          qc_hours: number | null
+          quantity: number | null
           revision_count: number | null
+          scope_of_work: string | null
+          serial_number: number | null
           status: string
+          studio: string | null
           updated_at: string | null
+          version_number: string | null
         }
         Insert: {
+          account?: string | null
+          additional_tasks?: string | null
           brief: string
+          business_unit?: string | null
           client_email: string
           client_name: string
+          content_hours?: number | null
+          coordinator_id?: string | null
+          copy_text?: string | null
           created_at?: string | null
           creative_type: string
           deadline: string
           designer_id?: string | null
+          details?: string | null
           drive_folder_url?: string | null
+          format?: string | null
           id?: string
+          image_editing_manipulation?: string | null
+          image_purchase?: string | null
           lead_id?: string | null
+          poc?: string | null
+          portal_link?: string | null
           preview_expires_at?: string | null
           preview_token?: string | null
           project_code: string
+          project_details?: string | null
+          qc_hours?: number | null
+          quantity?: number | null
           revision_count?: number | null
+          scope_of_work?: string | null
+          serial_number?: number | null
           status?: string
+          studio?: string | null
           updated_at?: string | null
+          version_number?: string | null
         }
         Update: {
+          account?: string | null
+          additional_tasks?: string | null
           brief?: string
+          business_unit?: string | null
           client_email?: string
           client_name?: string
+          content_hours?: number | null
+          coordinator_id?: string | null
+          copy_text?: string | null
           created_at?: string | null
           creative_type?: string
           deadline?: string
           designer_id?: string | null
+          details?: string | null
           drive_folder_url?: string | null
+          format?: string | null
           id?: string
+          image_editing_manipulation?: string | null
+          image_purchase?: string | null
           lead_id?: string | null
+          poc?: string | null
+          portal_link?: string | null
           preview_expires_at?: string | null
           preview_token?: string | null
           project_code?: string
+          project_details?: string | null
+          qc_hours?: number | null
+          quantity?: number | null
           revision_count?: number | null
+          scope_of_work?: string | null
+          serial_number?: number | null
           status?: string
+          studio?: string | null
           updated_at?: string | null
+          version_number?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_coordinator"
+            columns: ["coordinator_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "projects_designer_id_fkey"
             columns: ["designer_id"]
