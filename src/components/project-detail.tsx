@@ -311,11 +311,7 @@ export function ProjectDetail() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Notifications */}
-          <NotificationsPanel
-            notifications={notifications}
-            onMarkAsRead={handleMarkAsRead}
-            onMarkAllAsRead={handleMarkAllAsRead}
-          />
+          <NotificationsPanel />
 
           {/* Project Info */}
           <Card>
