@@ -21,7 +21,7 @@ export function ClientManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingClient, setEditingClient] = useState<Client | null>(null)
   const [loading, setLoading] = useState(false)
-  const { profile } = useAuth()
+  const { profile, hasRole } = useAuth()
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -174,7 +174,7 @@ export function ClientManagement() {
     setIsEditDialogOpen(true)
   }
 
-  const canManageClients = profile?.role === 'Admin' || profile?.role === 'Lead'
+  const canManageClients = hasRole('Admin') || hasRole('Lead')
 
   return (
     <div className="space-y-6">

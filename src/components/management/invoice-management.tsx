@@ -32,7 +32,7 @@ export function InvoiceManagement() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [viewingInvoice, setViewingInvoice] = useState<InvoiceWithItems | null>(null)
   const [loading, setLoading] = useState(false)
-  const { profile } = useAuth()
+  const { profile, hasRole } = useAuth()
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -276,7 +276,7 @@ export function InvoiceManagement() {
     return client?.name || 'Unknown Client'
   }
 
-  const canManageInvoices = profile?.role === 'Admin' || profile?.role === 'Lead'
+  const canManageInvoices = hasRole('Admin') || hasRole('Lead')
 
   const statusOptions = ['draft', 'sent', 'paid', 'overdue', 'cancelled']
 

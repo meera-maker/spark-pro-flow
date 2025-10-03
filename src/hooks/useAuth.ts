@@ -4,10 +4,12 @@ import { supabase } from '@/integrations/supabase/client'
 import { Database } from '@/integrations/supabase/types'
 
 type Profile = Database['public']['Tables']['users']['Row']
+type UserRole = Database['public']['Tables']['user_roles']['Row']
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [roles, setRoles] = useState<UserRole[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -39,14 +41,23 @@ export const useAuth = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .maybeSingle()
 
-      if (error) throw error
-      setProfile(data)
+      if (profileError) throw profileError
+      setProfile(profileData)
+
+      // Fetch user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('*')
+        .eq('user_id', userId)
+
+      if (rolesError) throw rolesError
+      setRoles(rolesData || [])
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
@@ -62,14 +73,13 @@ export const useAuth = () => {
     return { data, error }
   }
 
-  const signUp = async (email: string, password: string, fullName: string, role: Profile['role']) => {
+  const signUp = async (email: string, password: string, fullName: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
-          name: fullName,
-          role: role
+          name: fullName
         }
       }
     })
@@ -81,12 +91,19 @@ export const useAuth = () => {
     return { error }
   }
 
-  const updateProfile = async (updates: Database['public']['Tables']['users']['Update']) => {
+  const updateProfile = async (updates: Partial<Pick<Profile, 'name' | 'timezone' | 'notification_pref'>>) => {
     if (!user) return { error: new Error('No user logged in') }
+    
+    // Only allow updating safe fields
+    const safeUpdates = {
+      name: updates.name,
+      timezone: updates.timezone,
+      notification_pref: updates.notification_pref
+    }
     
     const { data, error } = await supabase
       .from('users')
-      .update(updates)
+      .update(safeUpdates)
       .eq('id', user.id)
       .select()
       .maybeSingle()
@@ -98,13 +115,19 @@ export const useAuth = () => {
     return { data, error }
   }
 
+  const hasRole = (role: string) => {
+    return roles.some(r => r.role === role)
+  }
+
   return {
     user,
     profile,
+    roles,
     loading,
     signIn,
     signUp,
     signOut,
-    updateProfile
+    updateProfile,
+    hasRole
   }
 }

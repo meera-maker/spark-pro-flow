@@ -12,7 +12,6 @@ export function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [role, setRole] = useState<'Admin' | 'Lead' | 'Designer'>('Designer')
   const [loading, setLoading] = useState(false)
   const { signIn, signUp } = useAuth()
   const { toast } = useToast()
@@ -23,12 +22,12 @@ export function LoginForm() {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password, name, role)
+        const { error } = await signUp(email, password, name)
         if (error) throw error
         
         toast({
           title: "Success",
-          description: "Account created successfully! You can now sign in."
+          description: "Account created successfully! Please contact an administrator to assign your role."
         })
         setIsSignUp(false)
       } else {
@@ -97,21 +96,6 @@ export function LoginForm() {
                 required
               />
             </div>
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <Select onValueChange={(value) => setRole(value as 'Admin' | 'Lead' | 'Designer')} defaultValue="Designer">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Admin">Admin</SelectItem>
-                    <SelectItem value="Lead">Lead</SelectItem>
-                    <SelectItem value="Designer">Designer</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading 
                 ? (isSignUp ? 'Creating account...' : 'Signing in...') 

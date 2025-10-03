@@ -24,7 +24,7 @@ export function TeamManagement() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(false)
-  const { profile } = useAuth()
+  const { profile, hasRole } = useAuth()
   const { toast } = useToast()
 
   const [formData, setFormData] = useState<{
@@ -175,7 +175,7 @@ export function TeamManagement() {
     }
   }
 
-  const canManageUsers = profile?.role === 'Admin' || profile?.role === 'Lead'
+  const canManageUsers = hasRole('Admin')
 
   return (
     <div className="space-y-6">

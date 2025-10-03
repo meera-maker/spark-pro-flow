@@ -30,7 +30,7 @@ export function ProjectManagement() {
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [viewingProject, setViewingProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(false)
-  const { profile } = useAuth()
+  const { profile, hasRole } = useAuth()
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -367,7 +367,7 @@ export function ProjectManagement() {
     return user?.name || 'Unknown'
   }
 
-  const canManageProjects = profile?.role === 'Admin' || profile?.role === 'Lead'
+  const canManageProjects = hasRole('Admin') || hasRole('Lead')
 
   const statusOptions = ['New', 'In Progress', 'Lead Review', 'Client Review', 'Approved', 'On Hold', 'Cancelled']
   const creativeTypes = ['Logo Design', 'Brand Identity', 'Website Design', 'Social Media Assets', 'Print Design', 'Packaging Design', 'Illustration', 'Video Production', 'Animation']
