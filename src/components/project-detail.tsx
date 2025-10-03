@@ -9,8 +9,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { WorkflowTimeline } from "@/components/workflow/workflow-timeline"
 import { StatusActions } from "@/components/workflow/status-actions"
 import { NotificationsPanel } from "@/components/workflow/notifications-panel"
+import { ProjectStages, ProjectStage } from "@/components/project-stages"
+import { AssignmentHistory, AssignmentRecord } from "@/components/assignment-history"
+import { RevisionDetailView, Revision } from "@/components/revision-detail-view"
 import { useWorkflow } from "@/hooks/useWorkflow"
 import { WorkflowStatus, WorkflowStep, Notification } from "@/types/workflow"
+import { useToast } from "@/hooks/use-toast"
 import { 
   Calendar, 
   User, 
@@ -87,33 +91,82 @@ const mockProject = {
   createdAt: "2024-01-01"
 }
 
-const mockRevisions = [
+const mockRevisions: Revision[] = [
   {
-    id: 1,
+    id: "rev-1",
     version: "v1.0",
     uploadedBy: "Maria Rodriguez",
-    note: "Initial brand concepts with 3 logo variations",
+    uploadedById: "user-4",
+    timestamp: new Date("2024-01-08T10:30:00"),
+    type: "design",
+    notes: "Initial brand concepts with 3 logo variations. Exploring different styles - minimalist, bold, and modern approaches.",
     fileUrl: "https://example.com/file1.pdf",
-    timestamp: "2024-01-08 10:30 AM",
-    type: "Designer Upload"
+    fileType: "pdf",
+    status: "approved",
+    approvedBy: "Alex Chen",
+    feedback: "Great start! Option 2 looks promising."
   },
   {
-    id: 2,
-    version: "v1.1", 
+    id: "rev-2",
+    version: "v1.1",
     uploadedBy: "Alex Chen",
-    note: "Client feedback: Prefer option 2, but make the icon more prominent",
-    fileUrl: null,
-    timestamp: "2024-01-09 2:15 PM", 
-    type: "Lead Review"
+    uploadedById: "user-3",
+    timestamp: new Date("2024-01-09T14:15:00"),
+    type: "review",
+    notes: "Client feedback: Prefer option 2, but make the icon more prominent. They also want to see it in different color variations.",
+    status: "approved"
   },
   {
-    id: 3,
+    id: "rev-3",
     version: "v2.0",
-    uploadedBy: "Maria Rodriguez", 
-    note: "Updated logo with larger icon, added color palette and typography",
+    uploadedBy: "Maria Rodriguez",
+    uploadedById: "user-4",
+    timestamp: new Date("2024-01-10T11:45:00"),
+    type: "design",
+    notes: "Updated logo with larger icon, added color palette and typography guidelines. Included usage examples.",
     fileUrl: "https://example.com/file2.pdf",
-    timestamp: "2024-01-10 11:45 AM",
-    type: "Designer Upload"
+    fileType: "pdf",
+    status: "pending"
+  },
+  {
+    id: "rev-4",
+    version: "v2.1",
+    uploadedBy: "Client",
+    uploadedById: "client-1",
+    timestamp: new Date("2024-01-11T09:20:00"),
+    type: "client-feedback",
+    notes: "Love the direction! Can we see it in navy blue instead of the current color? Also curious about how it looks on dark backgrounds.",
+    status: "approved"
+  }
+]
+
+const mockAssignmentHistory: AssignmentRecord[] = [
+  {
+    id: "assign-1",
+    fromUser: "System",
+    toUser: "Alex Chen",
+    timestamp: new Date("2024-01-01T09:00:00"),
+    type: "assignment",
+    role: "Lead",
+    notes: "Initial project assignment from client intake"
+  },
+  {
+    id: "assign-2",
+    fromUser: "Alex Chen",
+    toUser: "Maria Rodriguez",
+    timestamp: new Date("2024-01-02T16:45:00"),
+    type: "transfer",
+    role: "Designer",
+    notes: "Transferring to designer for logo work"
+  },
+  {
+    id: "assign-3",
+    fromUser: "Maria Rodriguez",
+    toUser: "Sarah Johnson",
+    timestamp: new Date("2024-01-09T10:00:00"),
+    type: "transfer",
+    role: "QC",
+    notes: "Ready for quality check"
   }
 ]
 
@@ -139,7 +192,10 @@ export function ProjectDetail() {
   const { projectId } = useParams()
   const [revisionNote, setRevisionNote] = useState("")
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
+  const [currentStage, setCurrentStage] = useState<ProjectStage>('design')
+  const [revisions, setRevisions] = useState<Revision[]>(mockRevisions)
   const { currentUser, getStatusColor, users } = useWorkflow()
+  const { toast } = useToast()
 
   const handleStatusChange = (newStatus: WorkflowStatus, assignedTo?: string, notes?: string) => {
     console.log(`Status changing to: ${newStatus}, assigned to: ${assignedTo}`, notes)
@@ -156,6 +212,56 @@ export function ProjectDetail() {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
   }
 
+  const handleStageChange = (stage: ProjectStage) => {
+    setCurrentStage(stage)
+    toast({
+      title: "Stage Updated",
+      description: `Project moved to ${stage} stage`
+    })
+  }
+
+  const handleAddRevision = (notes: string, file?: File) => {
+    const newRevision: Revision = {
+      id: `rev-${Date.now()}`,
+      version: `v${revisions.length + 1}.0`,
+      uploadedBy: currentUser?.name || 'Current User',
+      uploadedById: currentUser?.id || 'user-current',
+      timestamp: new Date(),
+      type: 'design',
+      notes,
+      status: 'pending'
+    }
+    setRevisions([...revisions, newRevision])
+    toast({
+      title: "Revision Added",
+      description: "New revision has been uploaded successfully"
+    })
+  }
+
+  const handleApproveRevision = (revisionId: string, feedback: string) => {
+    setRevisions(prev => prev.map(r => 
+      r.id === revisionId 
+        ? { ...r, status: 'approved' as const, feedback, approvedBy: currentUser?.name || 'User' }
+        : r
+    ))
+    toast({
+      title: "Revision Approved",
+      description: "Revision has been approved"
+    })
+  }
+
+  const handleRejectRevision = (revisionId: string, feedback: string) => {
+    setRevisions(prev => prev.map(r => 
+      r.id === revisionId 
+        ? { ...r, status: 'rejected' as const, feedback, approvedBy: currentUser?.name || 'User' }
+        : r
+    ))
+    toast({
+      title: "Changes Requested",
+      description: "Revision feedback has been sent"
+    })
+  }
+
   const getUserName = (userId: string) => {
     const user = users.find(u => u.id === userId)
     return user?.name || 'Unknown User'
@@ -166,7 +272,7 @@ export function ProjectDetail() {
   }
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in max-w-6xl mx-auto">
+    <div className="p-6 space-y-6 animate-fade-in max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
@@ -192,6 +298,9 @@ export function ProjectDetail() {
           />
         </div>
       </div>
+
+      {/* Project Stages */}
+      <ProjectStages currentStage={currentStage} onStageClick={handleStageChange} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
@@ -246,66 +355,16 @@ export function ProjectDetail() {
           {/* Workflow Timeline */}
           <WorkflowTimeline steps={mockWorkflowSteps} />
 
-          {/* Revision History */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Revision History</CardTitle>
-              <CardDescription>Track all project updates and feedback</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {mockRevisions.map((revision, index) => (
-                  <div key={revision.id} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <Badge variant={revision.type === "Designer Upload" ? "default" : "secondary"}>
-                          {revision.version}
-                        </Badge>
-                        <span className="text-sm font-medium">{revision.uploadedBy}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {revision.type}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {revision.timestamp}
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground mb-3">{revision.note}</p>
-                    
-                    {revision.fileUrl && (
-                      <Button variant="outline" size="sm">
-                        <Download className="h-3 w-3 mr-2" />
-                        Download File
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              {/* Add New Revision */}
-              <Separator className="my-6" />
-              <div className="space-y-3">
-                <h4 className="font-medium">Add Revision Note</h4>
-                <Textarea 
-                  placeholder="Add notes for this revision..."
-                  value={revisionNote}
-                  onChange={(e) => setRevisionNote(e.target.value)}
-                />
-                <div className="flex gap-2">
-                  <Button variant="outline">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload File
-                  </Button>
-                  <Button>
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Add Note
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Assignment & Transfer History */}
+          <AssignmentHistory assignments={mockAssignmentHistory} />
+
+          {/* Detailed Revision History */}
+          <RevisionDetailView
+            revisions={revisions}
+            onAddRevision={handleAddRevision}
+            onApprove={handleApproveRevision}
+            onReject={handleRejectRevision}
+          />
         </div>
 
         {/* Sidebar */}
