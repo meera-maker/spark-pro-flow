@@ -5,13 +5,16 @@ import { Database } from '@/integrations/supabase/types'
 import { useAuth } from '@/hooks/useAuth'
 
 type Profile = Database['public']['Tables']['users']['Row']
+type UserRoleRecord = Database['public']['Tables']['user_roles']['Row']
 
 export const useWorkflow = () => {
-  const { profile } = useAuth()
+  const { profile, roles } = useAuth()
   const [users, setUsers] = useState<Profile[]>([])
+  const [userRoles, setUserRoles] = useState<UserRoleRecord[]>([])
 
   useEffect(() => {
     fetchUsers()
+    fetchUserRoles()
   }, [])
 
   const fetchUsers = async () => {
@@ -27,15 +30,37 @@ export const useWorkflow = () => {
     }
   }
 
-  const currentUser = profile ? {
+  const fetchUserRoles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('*')
+
+      if (error) throw error
+      setUserRoles(data || [])
+    } catch (error) {
+      console.error('Error fetching user roles:', error)
+    }
+  }
+
+  // Get primary role for current user (first role found)
+  const currentUserRole = roles && roles.length > 0 ? roles[0].role as UserRole : null
+  
+  const currentUser = profile && currentUserRole ? {
     id: profile.id,
     name: profile.name || 'User',
     email: profile.email,
-    role: profile.role as UserRole
+    role: currentUserRole
   } : null
   
   const getUsersByRole = (role: UserRole): Profile[] => {
-    return users.filter(user => user.role === role)
+    // Find user IDs that have this role
+    const userIdsWithRole = userRoles
+      .filter(ur => ur.role === role)
+      .map(ur => ur.user_id)
+    
+    // Return users that have this role
+    return users.filter(user => userIdsWithRole.includes(user.id))
   }
   
   const getNextAssignees = (currentStatus: WorkflowStatus): Profile[] => {

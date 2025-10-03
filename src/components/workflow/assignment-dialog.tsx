@@ -22,6 +22,12 @@ export function AssignmentDialog({ projectId, currentStatus, onAssign, children 
   const { getNextAssignees, currentUser, canAssign } = useWorkflow()
   
   const nextAssignees = getNextAssignees(currentStatus)
+  
+  // Handle case where currentUser is null (not loaded yet)
+  if (!currentUser) {
+    return null
+  }
+  
   const canUserAssign = canAssign(currentStatus, currentUser.role)
   
   const handleAssign = () => {
