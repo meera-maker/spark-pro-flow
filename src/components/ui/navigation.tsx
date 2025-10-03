@@ -11,7 +11,7 @@ interface NavigationProps {
 
 export function Navigation({ className }: NavigationProps) {
   const location = useLocation()
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, roles, signOut } = useAuth()
   const navigate = useNavigate()
   const { toast } = useToast()
   
@@ -61,9 +61,9 @@ export function Navigation({ className }: NavigationProps) {
           </div>
           
           <div className="flex items-center space-x-4">
-            {user && profile && (
+            {user && profile && roles && roles.length > 0 && (
               <div className="hidden md:block text-sm text-muted-foreground">
-                {profile.name} <span className="text-xs">({profile.role})</span>
+                {profile.name} <span className="text-xs">({roles[0].role})</span>
               </div>
             )}
             {user ? (

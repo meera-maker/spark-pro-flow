@@ -30,11 +30,9 @@ export function TeamManagement() {
   const [formData, setFormData] = useState<{
     name: string
     email: string
-    role: 'Admin' | 'Lead' | 'Designer'
   }>({
     name: '',
-    email: '',
-    role: 'Designer'
+    email: ''
   })
 
   useEffect(() => {
@@ -60,6 +58,15 @@ export function TeamManagement() {
   }
 
   const handleAdd = async () => {
+    toast({
+      title: 'Feature Temporarily Disabled',
+      description: 'User management is being updated to work with the new role system. Please contact an administrator.',
+      variant: 'destructive'
+    })
+    return
+    
+    // Temporarily disabled - requires role system integration
+    /* 
     if (!formData.name || !formData.email) return
 
     setLoading(true)
@@ -68,8 +75,7 @@ export function TeamManagement() {
         .from('users')
         .insert([{
           name: formData.name,
-          email: formData.email,
-          role: formData.role
+          email: formData.email
         }])
 
       if (error) throw error
@@ -80,7 +86,7 @@ export function TeamManagement() {
       })
       
       setIsAddDialogOpen(false)
-      setFormData({ name: '', email: '', role: 'Designer' })
+      setFormData({ name: '', email: '' })
       fetchUsers()
     } catch (error: any) {
       toast({
@@ -91,42 +97,18 @@ export function TeamManagement() {
     } finally {
       setLoading(false)
     }
+    */
   }
 
   const handleEdit = async () => {
-    if (!editingUser || !formData.name || !formData.email) return
-
-    setLoading(true)
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({
-          name: formData.name,
-          email: formData.email,
-          role: formData.role
-        })
-        .eq('id', editingUser.id)
-
-      if (error) throw error
-
-      toast({
-        title: 'Success',
-        description: 'Team member updated successfully'
-      })
-      
-      setIsEditDialogOpen(false)
-      setEditingUser(null)
-      setFormData({ name: '', email: '', role: 'Designer' })
-      fetchUsers()
-    } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      })
-    } finally {
-      setLoading(false)
-    }
+    toast({
+      title: 'Feature Temporarily Disabled',
+      description: 'User management is being updated to work with the new role system. Please contact an administrator.',
+      variant: 'destructive'
+    })
+    return
+    
+    // Temporarily disabled - requires role system integration
   }
 
   const handleDelete = async (userId: string) => {
@@ -156,10 +138,15 @@ export function TeamManagement() {
     setEditingUser(user)
     setFormData({
       name: user.name,
-      email: user.email,
-      role: user.role as 'Admin' | 'Lead' | 'Designer'
+      email: user.email
     })
     setIsEditDialogOpen(true)
+  }
+
+  const getUserRole = (userId: string): string => {
+    // This would need to fetch from user_roles table
+    // For now, return "Role managed separately"
+    return "See roles in separate management"
   }
 
   const getRoleBadgeColor = (role: string) => {
@@ -226,21 +213,8 @@ export function TeamManagement() {
                         placeholder="Enter email address"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="role">Role</Label>
-                      <Select 
-                        value={formData.role} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, role: value as any }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Admin">Admin</SelectItem>
-                          <SelectItem value="Lead">Lead</SelectItem>
-                          <SelectItem value="Designer">Designer</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="text-sm text-muted-foreground">
+                      Note: User roles must be managed by system administrators through database tools.
                     </div>
                   </div>
                   <DialogFooter>
@@ -273,8 +247,8 @@ export function TeamManagement() {
                   <TableCell className="font-medium">{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Badge className={getRoleBadgeColor(user.role)}>
-                      {user.role}
+                    <Badge className="bg-gray-100 text-gray-800">
+                      {getUserRole(user.id)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -355,21 +329,8 @@ export function TeamManagement() {
                 placeholder="Enter email address"
               />
             </div>
-            <div>
-              <Label htmlFor="edit-role">Role</Label>
-              <Select 
-                value={formData.role} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, role: value as any }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Admin">Admin</SelectItem>
-                  <SelectItem value="Lead">Lead</SelectItem>
-                  <SelectItem value="Designer">Designer</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="text-sm text-muted-foreground">
+              Note: User roles must be managed by system administrators through database tools.
             </div>
           </div>
           <DialogFooter>

@@ -63,24 +63,43 @@ export const useWorkflow = () => {
     return users.filter(user => userIdsWithRole.includes(user.id))
   }
   
-  const getNextAssignees = (currentStatus: WorkflowStatus): Profile[] => {
+  const getNextAssignees = (currentStatus: WorkflowStatus): Array<Profile & { userRole?: UserRole }> => {
+    let roleNeeded: UserRole | null = null
+    
     switch (currentStatus) {
       case 'intake':
-        return getUsersByRole('Lead')
       case 'assigned-to-cs':
-        return getUsersByRole('Lead')
+        roleNeeded = 'Lead'
+        break
       case 'assigned-to-design-head':
-        return getUsersByRole('Designer')
+        roleNeeded = 'Designer'
+        break
       case 'in-design':
       case 'design-complete':
-        return getUsersByRole('QC')
+        roleNeeded = 'QC'
+        break
       case 'qc-revision-needed':
-        return getUsersByRole('Designer')
+        roleNeeded = 'Designer'
+        break
       case 'qc-approved':
-        return getUsersByRole('Lead')
+        roleNeeded = 'Lead'
+        break
       default:
         return []
     }
+    
+    if (!roleNeeded) return []
+    
+    const userIdsWithRole = userRoles
+      .filter(ur => ur.role === roleNeeded)
+      .map(ur => ur.user_id)
+    
+    return users
+      .filter(user => userIdsWithRole.includes(user.id))
+      .map(user => ({
+        ...user,
+        userRole: roleNeeded as UserRole
+      }))
   }
   
   const canAssign = (status: WorkflowStatus, userRole: UserRole): boolean => {

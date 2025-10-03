@@ -24,6 +24,7 @@ export function ProjectManagement() {
   const [projects, setProjects] = useState<Project[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [users, setUsers] = useState<User[]>([])
+  const [userRoles, setUserRoles] = useState<Array<{user_id: string, role: string}>>([])
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
@@ -72,7 +73,8 @@ export function ProjectManagement() {
     await Promise.all([
       fetchProjects(),
       fetchClients(),
-      fetchUsers()
+      fetchUsers(),
+      fetchUserRoles()
     ])
   }
 
@@ -120,6 +122,26 @@ export function ProjectManagement() {
     } catch (error: any) {
       console.error('Error fetching users:', error)
     }
+  }
+
+  const fetchUserRoles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+
+      if (error) throw error
+      setUserRoles(data || [])
+    } catch (error: any) {
+      console.error('Error fetching user roles:', error)
+    }
+  }
+
+  const getUsersByRole = (role: string) => {
+    const userIdsWithRole = userRoles
+      .filter(ur => ur.role === role)
+      .map(ur => ur.user_id)
+    return users.filter(u => userIdsWithRole.includes(u.id))
   }
 
   const resetForm = () => {
@@ -577,7 +599,7 @@ export function ProjectManagement() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="">Unassigned</SelectItem>
-                              {users.filter(u => u.role === 'Lead' || u.role === 'Admin').map(user => (
+                              {getUsersByRole('Lead').concat(getUsersByRole('Admin')).map(user => (
                                 <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
                               ))}
                             </SelectContent>
@@ -591,7 +613,7 @@ export function ProjectManagement() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="">Unassigned</SelectItem>
-                              {users.filter(u => u.role === 'Designer').map(user => (
+                              {getUsersByRole('Designer').map(user => (
                                 <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
                               ))}
                             </SelectContent>
