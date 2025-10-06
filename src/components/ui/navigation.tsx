@@ -57,6 +57,13 @@ export function Navigation({ className }: NavigationProps) {
                   Management
                 </Button>
               </Link>
+              {roles && roles.some(r => r.role === 'Admin') && (
+                <Link to="/settings">
+                  <Button variant="ghost" className={isActive('/settings') ? "text-blue" : "text-muted-foreground hover:text-blue"}>
+                    Settings
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
           

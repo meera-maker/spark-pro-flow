@@ -12,6 +12,7 @@ import Clients from "./pages/Clients";
 import Team from "./pages/Team";
 import Workflow from "./pages/Workflow";
 import Intake from "./pages/Intake";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,11 @@ const App = () => (
           <Route path="/workflow" element={
             <ProtectedRoute>
               <Workflow />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           } />
           <Route path="/intake" element={<Intake />} />
