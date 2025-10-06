@@ -283,7 +283,10 @@ export type Database = {
           created_at: string | null
           creative_type: string
           deadline: string
+          design_end_time: string | null
+          design_start_time: string | null
           designer_id: string | null
+          designer_notes: string | null
           details: string | null
           drive_folder_url: string | null
           format: string | null
@@ -304,6 +307,7 @@ export type Database = {
           serial_number: number | null
           status: string
           studio: string | null
+          total_design_hours: number | null
           updated_at: string | null
           version_number: string | null
         }
@@ -320,7 +324,10 @@ export type Database = {
           created_at?: string | null
           creative_type: string
           deadline: string
+          design_end_time?: string | null
+          design_start_time?: string | null
           designer_id?: string | null
+          designer_notes?: string | null
           details?: string | null
           drive_folder_url?: string | null
           format?: string | null
@@ -341,6 +348,7 @@ export type Database = {
           serial_number?: number | null
           status?: string
           studio?: string | null
+          total_design_hours?: number | null
           updated_at?: string | null
           version_number?: string | null
         }
@@ -357,7 +365,10 @@ export type Database = {
           created_at?: string | null
           creative_type?: string
           deadline?: string
+          design_end_time?: string | null
+          design_start_time?: string | null
           designer_id?: string | null
+          designer_notes?: string | null
           details?: string | null
           drive_folder_url?: string | null
           format?: string | null
@@ -378,6 +389,7 @@ export type Database = {
           serial_number?: number | null
           status?: string
           studio?: string | null
+          total_design_hours?: number | null
           updated_at?: string | null
           version_number?: string | null
         }

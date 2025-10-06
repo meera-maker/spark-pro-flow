@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,20 +11,61 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/useAuth"
 
 export function ClientIntakeForm() {
   const [date, setDate] = useState<Date>()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [creativeType, setCreativeType] = useState("")
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const { user } = useAuth()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    setIsSubmitting(false)
-    alert("Project submitted! Our team will review and get back to you soon.")
+    try {
+      const formData = new FormData(e.currentTarget)
+      
+      // Insert project into database
+      const { data, error } = await supabase
+        .from('projects')
+        .insert([{
+          client_name: formData.get('brand-name') as string,
+          client_email: formData.get('client-email') as string,
+          creative_type: creativeType,
+          deadline: date?.toISOString() as string,
+          brief: formData.get('brief') as string,
+          drive_folder_url: (formData.get('drive-folder') as string) || undefined,
+          status: 'New',
+          lead_id: user?.id || undefined,
+          project_code: `PROJ-${Date.now()}`
+        }])
+        .select()
+        .single()
+
+      if (error) throw error
+
+      toast({
+        title: "Success!",
+        description: "Project created successfully. Redirecting to dashboard..."
+      })
+
+      setTimeout(() => {
+        navigate('/projects')
+      }, 1500)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create project",
+        variant: "destructive"
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -47,7 +89,8 @@ export function ClientIntakeForm() {
               <div className="space-y-2">
                 <Label htmlFor="brand-name">Brand Name *</Label>
                 <Input 
-                  id="brand-name" 
+                  id="brand-name"
+                  name="brand-name"
                   placeholder="Enter your brand name" 
                   required 
                   className="border-2 focus:border-blue"
@@ -57,7 +100,8 @@ export function ClientIntakeForm() {
               <div className="space-y-2">
                 <Label htmlFor="client-email">Contact Email *</Label>
                 <Input 
-                  id="client-email" 
+                  id="client-email"
+                  name="client-email"
                   type="email" 
                   placeholder="you@company.com" 
                   required 
@@ -69,19 +113,19 @@ export function ClientIntakeForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="creative-type">Creative Type *</Label>
-                <Select required>
+                <Select required value={creativeType} onValueChange={setCreativeType}>
                   <SelectTrigger className="border-2 focus:border-blue">
                     <SelectValue placeholder="Select project type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="logo">Logo Design</SelectItem>
-                    <SelectItem value="branding">Brand Identity</SelectItem>
-                    <SelectItem value="website">Website Design</SelectItem>
-                    <SelectItem value="print">Print Design</SelectItem>
-                    <SelectItem value="packaging">Packaging</SelectItem>
-                    <SelectItem value="social">Social Media Assets</SelectItem>
-                    <SelectItem value="video">Video/Animation</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="Logo Design">Logo Design</SelectItem>
+                    <SelectItem value="Brand Identity">Brand Identity</SelectItem>
+                    <SelectItem value="Website Design">Website Design</SelectItem>
+                    <SelectItem value="Print Design">Print Design</SelectItem>
+                    <SelectItem value="Packaging">Packaging</SelectItem>
+                    <SelectItem value="Social Media Assets">Social Media Assets</SelectItem>
+                    <SelectItem value="Video/Animation">Video/Animation</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -118,6 +162,7 @@ export function ClientIntakeForm() {
               <Label htmlFor="brief">Project Brief *</Label>
               <Textarea 
                 id="brief"
+                name="brief"
                 placeholder="Describe your project, goals, target audience, style preferences, and any specific requirements..."
                 className="min-h-32 border-2 focus:border-blue"
                 required
@@ -128,6 +173,7 @@ export function ClientIntakeForm() {
               <Label htmlFor="reference-links">Reference Links</Label>
               <Textarea 
                 id="reference-links"
+                name="reference-links"
                 placeholder="Share any inspiration links, competitor examples, or style references (one per line)"
                 className="border-2 focus:border-blue"
               />
@@ -136,7 +182,8 @@ export function ClientIntakeForm() {
             <div className="space-y-2">
               <Label htmlFor="drive-folder">Google Drive Folder (Optional)</Label>
               <Input 
-                id="drive-folder" 
+                id="drive-folder"
+                name="drive-folder"
                 placeholder="https://drive.google.com/..." 
                 className="border-2 focus:border-blue"
               />

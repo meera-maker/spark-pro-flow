@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell } from "lucide-react"
 import { Database } from "@/integrations/supabase/types"
+import { QuickAddProjectDialog } from "@/components/quick-add-project-dialog"
 
 type Project = Database['public']['Tables']['projects']['Row']
 
@@ -177,12 +178,15 @@ export function ProjectsDashboard() {
         </div>
         
         {(currentUser.role === 'Admin' || currentUser.role === 'Lead') && (
-          <Link to="/intake">
-            <Button className="gradient-blue text-white hover:opacity-90">
-              <Plus className="h-4 w-4 mr-2" />
-              New Project
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <QuickAddProjectDialog onProjectAdded={fetchProjects} />
+            <Link to="/intake">
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Full Intake Form
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
 

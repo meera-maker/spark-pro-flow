@@ -12,6 +12,7 @@ import { NotificationsPanel } from "@/components/workflow/notifications-panel"
 import { ProjectStages, ProjectStage } from "@/components/project-stages"
 import { AssignmentHistory, AssignmentRecord } from "@/components/assignment-history"
 import { RevisionDetailView, Revision } from "@/components/revision-detail-view"
+import { TimeTrackingPanel } from "@/components/time-tracking-panel"
 import { useWorkflow } from "@/hooks/useWorkflow"
 import { WorkflowStatus, WorkflowStep, Notification } from "@/types/workflow"
 import { useToast } from "@/hooks/use-toast"
@@ -369,6 +370,9 @@ export function ProjectDetail() {
 
         {/* Sidebar */}
         <div className="space-y-6">
+          {/* Time Tracking */}
+          <TimeTrackingPanel projectId={mockProject.id} projectCode={mockProject.id} />
+
           {/* Notifications */}
           <NotificationsPanel />
 
