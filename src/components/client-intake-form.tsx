@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,14 +14,45 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/useAuth"
+import { Database } from "@/integrations/supabase/types"
+
+type Client = Database['public']['Tables']['clients']['Row']
+type User = Database['public']['Tables']['users']['Row']
 
 export function ClientIntakeForm() {
   const [date, setDate] = useState<Date>()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [creativeType, setCreativeType] = useState("")
+  const [clients, setClients] = useState<Client[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [selectedClient, setSelectedClient] = useState<string>("")
+  const [assignedTo, setAssignedTo] = useState<string>("")
   const navigate = useNavigate()
   const { toast } = useToast()
   const { user } = useAuth()
+
+  useEffect(() => {
+    fetchClients()
+    fetchUsers()
+  }, [])
+
+  const fetchClients = async () => {
+    const { data } = await supabase
+      .from('clients')
+      .select('*')
+      .order('name', { ascending: true })
+    
+    if (data) setClients(data)
+  }
+
+  const fetchUsers = async () => {
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .order('name', { ascending: true })
+    
+    if (data) setUsers(data)
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -29,19 +60,25 @@ export function ClientIntakeForm() {
     
     try {
       const formData = new FormData(e.currentTarget)
+      const client = clients.find(c => c.id === selectedClient)
+      
+      if (!client) {
+        throw new Error("Please select a client")
+      }
       
       // Insert project into database
       const { data, error } = await supabase
         .from('projects')
         .insert([{
-          client_name: formData.get('brand-name') as string,
-          client_email: formData.get('client-email') as string,
+          client_name: client.name,
+          client_email: client.email,
           creative_type: creativeType,
           deadline: date?.toISOString() as string,
           brief: formData.get('brief') as string,
           drive_folder_url: (formData.get('drive-folder') as string) || undefined,
           status: 'New',
           lead_id: user?.id || undefined,
+          designer_id: assignedTo || null,
           project_code: `PROJ-${Date.now()}`
         }])
         .select()
@@ -87,26 +124,38 @@ export function ClientIntakeForm() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="brand-name">Brand Name *</Label>
-                <Input 
-                  id="brand-name"
-                  name="brand-name"
-                  placeholder="Enter your brand name" 
-                  required 
-                  className="border-2 focus:border-blue"
-                />
+                <Label htmlFor="client-select">Select Client *</Label>
+                <Select required value={selectedClient} onValueChange={setSelectedClient}>
+                  <SelectTrigger className="border-2 focus:border-blue">
+                    <SelectValue placeholder="Choose from existing clients" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name} ({client.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  No clients? Add them in Team → Clients tab first
+                </p>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="client-email">Contact Email *</Label>
-                <Input 
-                  id="client-email"
-                  name="client-email"
-                  type="email" 
-                  placeholder="you@company.com" 
-                  required 
-                  className="border-2 focus:border-blue"
-                />
+                <Label htmlFor="assign-to">Assign To</Label>
+                <Select value={assignedTo} onValueChange={setAssignedTo}>
+                  <SelectTrigger className="border-2 focus:border-blue">
+                    <SelectValue placeholder="Assign to team member (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map((teamUser) => (
+                      <SelectItem key={teamUser.id} value={teamUser.id}>
+                        {teamUser.name} - {teamUser.role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

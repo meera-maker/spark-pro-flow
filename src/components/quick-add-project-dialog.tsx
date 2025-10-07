@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,32 +12,69 @@ import { cn } from "@/lib/utils"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/useAuth"
+import { Database } from "@/integrations/supabase/types"
+
+type Client = Database['public']['Tables']['clients']['Row']
+type User = Database['public']['Tables']['users']['Row']
 
 export function QuickAddProjectDialog({ onProjectAdded }: { onProjectAdded?: () => void }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [clientName, setClientName] = useState("")
-  const [clientEmail, setClientEmail] = useState("")
+  const [clients, setClients] = useState<Client[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [selectedClient, setSelectedClient] = useState<string>("")
+  const [assignedTo, setAssignedTo] = useState<string>("")
   const [creativeType, setCreativeType] = useState("")
   const [deadline, setDeadline] = useState<Date>(addDays(new Date(), 7))
   const { toast } = useToast()
   const { user } = useAuth()
+
+  useEffect(() => {
+    if (open) {
+      fetchClients()
+      fetchUsers()
+    }
+  }, [open])
+
+  const fetchClients = async () => {
+    const { data } = await supabase
+      .from('clients')
+      .select('*')
+      .order('name', { ascending: true })
+    
+    if (data) setClients(data)
+  }
+
+  const fetchUsers = async () => {
+    const { data } = await supabase
+      .from('users')
+      .select('*')
+      .order('name', { ascending: true })
+    
+    if (data) setUsers(data)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
+      const client = clients.find(c => c.id === selectedClient)
+      if (!client) {
+        throw new Error("Please select a client")
+      }
+
       const { error } = await supabase
         .from('projects')
         .insert([{
-          client_name: clientName,
-          client_email: clientEmail,
+          client_name: client.name,
+          client_email: client.email,
           creative_type: creativeType,
           deadline: deadline.toISOString(),
-          brief: `Quick project for ${clientName}`,
+          brief: `Project for ${client.name}`,
           status: 'New',
           lead_id: user?.id,
+          designer_id: assignedTo || null,
           project_code: `PROJ-${Date.now()}`
         }])
 
@@ -49,8 +86,8 @@ export function QuickAddProjectDialog({ onProjectAdded }: { onProjectAdded?: () 
       })
 
       // Reset form
-      setClientName("")
-      setClientEmail("")
+      setSelectedClient("")
+      setAssignedTo("")
       setCreativeType("")
       setDeadline(addDays(new Date(), 7))
       setOpen(false)
@@ -128,26 +165,38 @@ export function QuickAddProjectDialog({ onProjectAdded }: { onProjectAdded?: () 
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="quick-client-name">Client Name *</Label>
-            <Input
-              id="quick-client-name"
-              value={clientName}
-              onChange={(e) => setClientName(e.target.value)}
-              placeholder="Enter client name"
-              required
-            />
+            <Label htmlFor="quick-client">Select Client *</Label>
+            <Select value={selectedClient} onValueChange={setSelectedClient} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a client" />
+              </SelectTrigger>
+              <SelectContent>
+                {clients.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>
+                    {client.name} ({client.email})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              No clients? Add them in Team → Clients tab
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quick-client-email">Client Email *</Label>
-            <Input
-              id="quick-client-email"
-              type="email"
-              value={clientEmail}
-              onChange={(e) => setClientEmail(e.target.value)}
-              placeholder="client@example.com"
-              required
-            />
+            <Label htmlFor="quick-assign">Assign To</Label>
+            <Select value={assignedTo} onValueChange={setAssignedTo}>
+              <SelectTrigger>
+                <SelectValue placeholder="Assign to team member (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                {users.map((teamUser) => (
+                  <SelectItem key={teamUser.id} value={teamUser.id}>
+                    {teamUser.name} - {teamUser.role}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
