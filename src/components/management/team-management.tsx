@@ -30,9 +30,11 @@ export function TeamManagement() {
   const [formData, setFormData] = useState<{
     name: string
     email: string
+    role: string
   }>({
     name: '',
-    email: ''
+    email: '',
+    role: ''
   })
 
   useEffect(() => {
@@ -58,16 +60,14 @@ export function TeamManagement() {
   }
 
   const handleAdd = async () => {
-    toast({
-      title: 'Feature Temporarily Disabled',
-      description: 'User management is being updated to work with the new role system. Please contact an administrator.',
-      variant: 'destructive'
-    })
-    return
-    
-    // Temporarily disabled - requires role system integration
-    /* 
-    if (!formData.name || !formData.email) return
+    if (!formData.name || !formData.email || !formData.role) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all fields',
+        variant: 'destructive'
+      })
+      return
+    }
 
     setLoading(true)
     try {
@@ -75,7 +75,8 @@ export function TeamManagement() {
         .from('users')
         .insert([{
           name: formData.name,
-          email: formData.email
+          email: formData.email,
+          role: formData.role
         }])
 
       if (error) throw error
@@ -86,7 +87,7 @@ export function TeamManagement() {
       })
       
       setIsAddDialogOpen(false)
-      setFormData({ name: '', email: '' })
+      setFormData({ name: '', email: '', role: '' })
       fetchUsers()
     } catch (error: any) {
       toast({
@@ -97,18 +98,49 @@ export function TeamManagement() {
     } finally {
       setLoading(false)
     }
-    */
   }
 
   const handleEdit = async () => {
-    toast({
-      title: 'Feature Temporarily Disabled',
-      description: 'User management is being updated to work with the new role system. Please contact an administrator.',
-      variant: 'destructive'
-    })
-    return
-    
-    // Temporarily disabled - requires role system integration
+    if (!editingUser || !formData.name || !formData.email || !formData.role) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all fields',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setLoading(true)
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({
+          name: formData.name,
+          email: formData.email,
+          role: formData.role
+        })
+        .eq('id', editingUser.id)
+
+      if (error) throw error
+
+      toast({
+        title: 'Success',
+        description: 'Team member updated successfully'
+      })
+      
+      setIsEditDialogOpen(false)
+      setEditingUser(null)
+      setFormData({ name: '', email: '', role: '' })
+      fetchUsers()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDelete = async (userId: string) => {
@@ -138,15 +170,14 @@ export function TeamManagement() {
     setEditingUser(user)
     setFormData({
       name: user.name,
-      email: user.email
+      email: user.email,
+      role: user.role
     })
     setIsEditDialogOpen(true)
   }
 
-  const getUserRole = (userId: string): string => {
-    // This would need to fetch from user_roles table
-    // For now, return "Role managed separately"
-    return "See roles in separate management"
+  const getUserRole = (user: User): string => {
+    return user.role
   }
 
   const getRoleBadgeColor = (role: string) => {
@@ -213,8 +244,20 @@ export function TeamManagement() {
                         placeholder="Enter email address"
                       />
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      Note: User roles must be managed by system administrators through database tools.
+                    <div>
+                      <Label htmlFor="role">Role</Label>
+                      <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                        <SelectTrigger id="role">
+                          <SelectValue placeholder="Select role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Admin">Admin</SelectItem>
+                          <SelectItem value="Lead">Lead</SelectItem>
+                          <SelectItem value="Designer">Designer</SelectItem>
+                          <SelectItem value="QC">QC</SelectItem>
+                          <SelectItem value="Coordinator">Coordinator</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   <DialogFooter>
@@ -247,8 +290,8 @@ export function TeamManagement() {
                   <TableCell className="font-medium">{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Badge className="bg-gray-100 text-gray-800">
-                      {getUserRole(user.id)}
+                    <Badge className={getRoleBadgeColor(user.role)}>
+                      {getUserRole(user)}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -329,8 +372,20 @@ export function TeamManagement() {
                 placeholder="Enter email address"
               />
             </div>
-            <div className="text-sm text-muted-foreground">
-              Note: User roles must be managed by system administrators through database tools.
+            <div>
+              <Label htmlFor="edit-role">Role</Label>
+              <Select value={formData.role} onValueChange={(value) => setFormData(prev => ({ ...prev, role: value }))}>
+                <SelectTrigger id="edit-role">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Lead">Lead</SelectItem>
+                  <SelectItem value="Designer">Designer</SelectItem>
+                  <SelectItem value="QC">QC</SelectItem>
+                  <SelectItem value="Coordinator">Coordinator</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

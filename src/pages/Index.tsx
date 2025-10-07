@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "react-router-dom"
+import { QuickAddProjectDialog } from "@/components/quick-add-project-dialog"
 
 const Index = () => {
   return (
@@ -25,14 +26,7 @@ const Index = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Link to="/intake">
-                <Button 
-                  size="lg" 
-                  className="gradient-blue text-white hover:opacity-90 px-8 py-4 text-lg"
-                >
-                  Start New Project
-                </Button>
-              </Link>
+              <QuickAddProjectDialog onProjectAdded={() => {}} />
               <Link to="/dashboard">
                 <Button 
                   size="lg" 
