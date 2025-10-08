@@ -29,7 +29,10 @@ export function ClientManagement() {
     email: '',
     phone: '',
     company: '',
-    address: ''
+    address: '',
+    billing_address: '',
+    tax_id: '',
+    payment_terms: 'Net 30'
   })
 
   useEffect(() => {
@@ -60,7 +63,10 @@ export function ClientManagement() {
       email: '',
       phone: '',
       company: '',
-      address: ''
+      address: '',
+      billing_address: '',
+      tax_id: '',
+      payment_terms: 'Net 30'
     })
   }
 
@@ -77,6 +83,9 @@ export function ClientManagement() {
           phone: formData.phone || null,
           company: formData.company || null,
           address: formData.address || null,
+          billing_address: formData.billing_address || null,
+          tax_id: formData.tax_id || null,
+          payment_terms: formData.payment_terms || 'Net 30',
           created_by: profile?.id
         }])
 
@@ -113,7 +122,10 @@ export function ClientManagement() {
           email: formData.email,
           phone: formData.phone || null,
           company: formData.company || null,
-          address: formData.address || null
+          address: formData.address || null,
+          billing_address: formData.billing_address || null,
+          tax_id: formData.tax_id || null,
+          payment_terms: formData.payment_terms || 'Net 30'
         })
         .eq('id', editingClient.id)
 
@@ -169,7 +181,10 @@ export function ClientManagement() {
       email: client.email,
       phone: client.phone || '',
       company: client.company || '',
-      address: client.address || ''
+      address: client.address || '',
+      billing_address: client.billing_address || '',
+      tax_id: client.tax_id || '',
+      payment_terms: client.payment_terms || 'Net 30'
     })
     setIsEditDialogOpen(true)
   }
@@ -251,6 +266,34 @@ export function ClientManagement() {
                         onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                         placeholder="Full address"
                         rows={3}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="billing-address">Billing Address</Label>
+                      <Textarea
+                        id="billing-address"
+                        value={formData.billing_address}
+                        onChange={(e) => setFormData(prev => ({ ...prev, billing_address: e.target.value }))}
+                        placeholder="Billing address (if different)"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="tax-id">Tax ID</Label>
+                      <Input
+                        id="tax-id"
+                        value={formData.tax_id}
+                        onChange={(e) => setFormData(prev => ({ ...prev, tax_id: e.target.value }))}
+                        placeholder="Tax/VAT ID"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="payment-terms">Payment Terms</Label>
+                      <Input
+                        id="payment-terms"
+                        value={formData.payment_terms}
+                        onChange={(e) => setFormData(prev => ({ ...prev, payment_terms: e.target.value }))}
+                        placeholder="e.g., Net 30"
                       />
                     </div>
                   </div>
@@ -388,6 +431,34 @@ export function ClientManagement() {
                 onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
                 placeholder="Full address"
                 rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-billing-address">Billing Address</Label>
+              <Textarea
+                id="edit-billing-address"
+                value={formData.billing_address}
+                onChange={(e) => setFormData(prev => ({ ...prev, billing_address: e.target.value }))}
+                placeholder="Billing address (if different)"
+                rows={3}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-tax-id">Tax ID</Label>
+              <Input
+                id="edit-tax-id"
+                value={formData.tax_id}
+                onChange={(e) => setFormData(prev => ({ ...prev, tax_id: e.target.value }))}
+                placeholder="Tax/VAT ID"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-payment-terms">Payment Terms</Label>
+              <Input
+                id="edit-payment-terms"
+                value={formData.payment_terms}
+                onChange={(e) => setFormData(prev => ({ ...prev, payment_terms: e.target.value }))}
+                placeholder="e.g., Net 30"
               />
             </div>
           </div>

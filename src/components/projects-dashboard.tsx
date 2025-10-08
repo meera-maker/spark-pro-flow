@@ -11,7 +11,7 @@ import { useWorkflow } from "@/hooks/useWorkflow"
 import { WorkflowStatus } from "@/types/workflow"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell } from "lucide-react"
+import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit } from "lucide-react"
 import { Database } from "@/integrations/supabase/types"
 import { QuickAddProjectDialog } from "@/components/quick-add-project-dialog"
 
@@ -297,6 +297,7 @@ export function ProjectsDashboard() {
               <TableRow>
                 <TableHead>Project ID</TableHead>
                 <TableHead>Client</TableHead>
+                <TableHead>Client Email</TableHead>
                 <TableHead>Creative Type</TableHead>
                 <TableHead>Workflow Status</TableHead>
                 <TableHead>Assigned To</TableHead>
@@ -321,6 +322,7 @@ export function ProjectsDashboard() {
                       </Link>
                     </TableCell>
                     <TableCell>{project.client_name}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{project.client_email}</TableCell>
                     <TableCell>{project.creative_type}</TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(workflowStatus)}>
@@ -354,6 +356,12 @@ export function ProjectsDashboard() {
                         />
                         <Button variant="ghost" size="sm" asChild>
                           <Link to={`/projects/${project.project_code}`}>
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/projects/${project.project_code}`}>
                             <Eye className="h-4 w-4" />
                           </Link>
                         </Button>
@@ -364,7 +372,7 @@ export function ProjectsDashboard() {
               })}
               {filteredProjects.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
                     No projects found matching your criteria.
                   </TableCell>
                 </TableRow>

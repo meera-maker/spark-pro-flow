@@ -32,6 +32,41 @@ export type Database = {
         }
         Relationships: []
       }
+      attendance: {
+        Row: {
+          created_at: string | null
+          duration_hours: number | null
+          id: string
+          login_time: string
+          logout_time: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          duration_hours?: number | null
+          id?: string
+          login_time?: string
+          logout_time?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          duration_hours?: number | null
+          id?: string
+          login_time?: string
+          logout_time?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -73,35 +108,44 @@ export type Database = {
       clients: {
         Row: {
           address: string | null
+          billing_address: string | null
           company: string | null
           created_at: string
           created_by: string | null
           email: string
           id: string
           name: string
+          payment_terms: string | null
           phone: string | null
+          tax_id: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          billing_address?: string | null
           company?: string | null
           created_at?: string
           created_by?: string | null
           email: string
           id?: string
           name: string
+          payment_terms?: string | null
           phone?: string | null
+          tax_id?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          billing_address?: string | null
           company?: string | null
           created_at?: string
           created_by?: string | null
           email?: string
           id?: string
           name?: string
+          payment_terms?: string | null
           phone?: string | null
+          tax_id?: string | null
           updated_at?: string
         }
         Relationships: [
