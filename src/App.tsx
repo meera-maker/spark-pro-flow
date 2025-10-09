@@ -13,6 +13,7 @@ import Projects from "./pages/Projects";
 import Clients from "./pages/Clients";
 import Team from "./pages/Team";
 import Workflow from "./pages/Workflow";
+import RolesResponsibilities from "./pages/RolesResponsibilities";
 import Intake from "./pages/Intake";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -54,6 +55,11 @@ const AppContent = () => {
           <Route path="/workflow" element={
             <ProtectedRoute>
               <Workflow />
+            </ProtectedRoute>
+          } />
+          <Route path="/roles" element={
+            <ProtectedRoute>
+              <RolesResponsibilities />
             </ProtectedRoute>
           } />
           <Route path="/settings" element={

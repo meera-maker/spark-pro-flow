@@ -313,6 +313,50 @@ export type Database = {
           },
         ]
       }
+      project_workflow_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          from_role: Database["public"]["Enums"]["workflow_role"] | null
+          from_user_id: string | null
+          id: string
+          notes: string | null
+          project_id: string | null
+          to_role: Database["public"]["Enums"]["workflow_role"] | null
+          to_user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          from_role?: Database["public"]["Enums"]["workflow_role"] | null
+          from_user_id?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          to_role?: Database["public"]["Enums"]["workflow_role"] | null
+          to_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          from_role?: Database["public"]["Enums"]["workflow_role"] | null
+          from_user_id?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          to_role?: Database["public"]["Enums"]["workflow_role"] | null
+          to_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_workflow_log_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           account: string | null
@@ -509,6 +553,42 @@ export type Database = {
           },
         ]
       }
+      role_responsibilities: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          permissions: Json
+          responsibilities: Json
+          role: Database["public"]["Enums"]["workflow_role"]
+          title: string
+          updated_at: string | null
+          workflow_actions: Json
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          permissions?: Json
+          responsibilities?: Json
+          role: Database["public"]["Enums"]["workflow_role"]
+          title: string
+          updated_at?: string | null
+          workflow_actions?: Json
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          permissions?: Json
+          responsibilities?: Json
+          role?: Database["public"]["Enums"]["workflow_role"]
+          title?: string
+          updated_at?: string | null
+          workflow_actions?: Json
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -540,6 +620,7 @@ export type Database = {
           role: string
           timezone: string | null
           updated_at: string | null
+          workflow_role: Database["public"]["Enums"]["workflow_role"] | null
         }
         Insert: {
           created_at?: string | null
@@ -550,6 +631,7 @@ export type Database = {
           role: string
           timezone?: string | null
           updated_at?: string | null
+          workflow_role?: Database["public"]["Enums"]["workflow_role"] | null
         }
         Update: {
           created_at?: string | null
@@ -560,6 +642,7 @@ export type Database = {
           role?: string
           timezone?: string | null
           updated_at?: string | null
+          workflow_role?: Database["public"]["Enums"]["workflow_role"] | null
         }
         Relationships: []
       }
@@ -594,6 +677,14 @@ export type Database = {
     }
     Enums: {
       app_role: "Admin" | "Lead" | "Designer" | "QC" | "CS" | "Sr_CS"
+      workflow_role:
+        | "Sr. CS"
+        | "CS"
+        | "Design Head"
+        | "Designer"
+        | "QC"
+        | "Client Serving"
+        | "Admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -722,6 +813,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["Admin", "Lead", "Designer", "QC", "CS", "Sr_CS"],
+      workflow_role: [
+        "Sr. CS",
+        "CS",
+        "Design Head",
+        "Designer",
+        "QC",
+        "Client Serving",
+        "Admin",
+      ],
     },
   },
 } as const
