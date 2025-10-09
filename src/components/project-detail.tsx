@@ -310,7 +310,7 @@ export function ProjectDetail() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+                <FileText className="h-5 w-5" aria-label="Project brief document icon" />
                 Project Brief
               </CardTitle>
             </CardHeader>
@@ -329,7 +329,7 @@ export function ProjectDetail() {
                         rel="noopener noreferrer"
                         className="flex items-center gap-2 text-sm text-blue hover:underline"
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-3 w-3" aria-label="External link icon" />
                         {link}
                       </a>
                     ))}
@@ -345,7 +345,7 @@ export function ProjectDetail() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm text-blue hover:underline"
                   >
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="h-3 w-3" aria-label="External link icon" />
                     Google Drive Assets
                   </a>
                 </div>
@@ -383,7 +383,7 @@ export function ProjectDetail() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Calendar className="h-4 w-4 text-muted-foreground" aria-label="Calendar icon" />
                 <div>
                   <p className="text-sm font-medium">Deadline</p>
                   <p className="text-sm text-red-600 font-medium">
@@ -393,7 +393,7 @@ export function ProjectDetail() {
               </div>
               
               <div className="flex items-center gap-3">
-                <User className="h-4 w-4 text-muted-foreground" />
+                <User className="h-4 w-4 text-muted-foreground" aria-label="User icon" />
                 <div>
                   <p className="text-sm font-medium">Assigned To</p>
                   <p className="text-sm text-muted-foreground">{getUserName(mockProject.currentAssignee)}</p>
@@ -401,7 +401,7 @@ export function ProjectDetail() {
               </div>
               
               <div className="flex items-center gap-3">
-                <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                <MessageCircle className="h-4 w-4 text-muted-foreground" aria-label="Message icon" />
                 <div>
                   <p className="text-sm font-medium">Revisions</p>
                   <Badge variant={mockProject.revisionCount > 2 ? "destructive" : "secondary"}>
@@ -429,7 +429,7 @@ export function ProjectDetail() {
               </div>
               
               <Button variant="outline" className="w-full">
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="h-4 w-4 mr-2" aria-hidden="true" />
                 Send Email
               </Button>
             </CardContent>
@@ -442,15 +442,15 @@ export function ProjectDetail() {
             </CardHeader>
             <CardContent className="space-y-2">
               <Button variant="outline" className="w-full justify-start">
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className="h-4 w-4 mr-2" aria-hidden="true" />
                 Upload New Version
               </Button>
               <Button variant="outline" className="w-full justify-start">
-                <MessageCircle className="h-4 w-4 mr-2" />
+                <MessageCircle className="h-4 w-4 mr-2" aria-hidden="true" />
                 Request Revision
               </Button>
               <Button variant="outline" className="w-full justify-start">
-                <Send className="h-4 w-4 mr-2" />
+                <Send className="h-4 w-4 mr-2" aria-hidden="true" />
                 Send Preview Link
               </Button>
             </CardContent>
