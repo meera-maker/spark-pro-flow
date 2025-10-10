@@ -184,10 +184,20 @@ export function TeamManagement() {
     switch (role) {
       case 'Admin':
         return 'bg-red-100 text-red-800'
-      case 'Lead':
+      case 'Sr. CS':
+        return 'bg-purple-100 text-purple-800'
+      case 'CS':
+        return 'bg-indigo-100 text-indigo-800'
+      case 'Design Head':
         return 'bg-blue-100 text-blue-800'
       case 'Designer':
         return 'bg-green-100 text-green-800'
+      case 'QC':
+        return 'bg-orange-100 text-orange-800'
+      case 'Client Serving':
+        return 'bg-cyan-100 text-cyan-800'
+      case 'Client':
+        return 'bg-pink-100 text-pink-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -252,10 +262,13 @@ export function TeamManagement() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Admin">Admin</SelectItem>
-                          <SelectItem value="Lead">Lead</SelectItem>
+                          <SelectItem value="Sr. CS">Sr. CS</SelectItem>
+                          <SelectItem value="CS">CS</SelectItem>
+                          <SelectItem value="Design Head">Design Head</SelectItem>
                           <SelectItem value="Designer">Designer</SelectItem>
                           <SelectItem value="QC">QC</SelectItem>
-                          <SelectItem value="Coordinator">Coordinator</SelectItem>
+                          <SelectItem value="Client Serving">Client Serving</SelectItem>
+                          <SelectItem value="Client">Client</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -380,10 +393,13 @@ export function TeamManagement() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Admin">Admin</SelectItem>
-                  <SelectItem value="Lead">Lead</SelectItem>
+                  <SelectItem value="Sr. CS">Sr. CS</SelectItem>
+                  <SelectItem value="CS">CS</SelectItem>
+                  <SelectItem value="Design Head">Design Head</SelectItem>
                   <SelectItem value="Designer">Designer</SelectItem>
                   <SelectItem value="QC">QC</SelectItem>
-                  <SelectItem value="Coordinator">Coordinator</SelectItem>
+                  <SelectItem value="Client Serving">Client Serving</SelectItem>
+                  <SelectItem value="Client">Client</SelectItem>
                 </SelectContent>
               </Select>
             </div>
