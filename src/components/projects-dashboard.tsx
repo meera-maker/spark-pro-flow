@@ -177,17 +177,15 @@ export function ProjectsDashboard() {
         </p>
         </div>
         
-        {(currentUser.role === 'Admin' || currentUser.role === 'Lead') && (
-          <div className="flex gap-2">
-            <QuickAddProjectDialog onProjectAdded={fetchProjects} />
-            <Link to="/intake">
-              <Button variant="outline">
-                <Plus className="h-4 w-4 mr-2" />
-                Full Intake Form
-              </Button>
-            </Link>
-          </div>
-        )}
+        <div className="flex gap-2">
+          <QuickAddProjectDialog onProjectAdded={fetchProjects} />
+          <Link to="/intake">
+            <Button variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              Full Intake Form
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Role-based Stats Cards */}
