@@ -120,6 +120,17 @@ export function StatusActions({ projectId, currentStatus, currentAssignee, onSta
           </Button>
         </>
       )}
+      
+      {(isLead || isCurrentAssignee) && currentStatus === 'client-approved' && (
+        <Button 
+          onClick={() => handleStatusUpdate('completed')}
+          className="gap-2"
+          variant="default"
+        >
+          <CheckCircle className="h-4 w-4" />
+          Mark as Completed
+        </Button>
+      )}
     </div>
   )
 }
