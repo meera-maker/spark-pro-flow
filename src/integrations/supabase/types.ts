@@ -655,14 +655,8 @@ export type Database = {
         Args: { _required_role: string; _user_id: string }
         Returns: boolean
       }
-      generate_invoice_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_project_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      generate_invoice_number: { Args: never; Returns: string }
+      generate_project_code: { Args: never; Returns: string }
       get_next_revision_version: {
         Args: { p_project_id: string }
         Returns: number
