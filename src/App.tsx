@@ -27,46 +27,14 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/projects" element={
-            <ProtectedRoute>
-              <Projects />
-            </ProtectedRoute>
-          } />
-          <Route path="/projects/:projectId" element={
-            <ProtectedRoute>
-              <Projects />
-            </ProtectedRoute>
-          } />
-          <Route path="/clients" element={
-            <ProtectedRoute>
-              <Clients />
-            </ProtectedRoute>
-          } />
-          <Route path="/team" element={
-            <ProtectedRoute>
-              <Team />
-            </ProtectedRoute>
-          } />
-          <Route path="/workflow" element={
-            <ProtectedRoute>
-              <Workflow />
-            </ProtectedRoute>
-          } />
-          <Route path="/roles" element={
-            <ProtectedRoute>
-              <RolesResponsibilities />
-            </ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          } />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:projectId" element={<Projects />} />
+          <Route path="/clients" element={<Clients />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/workflow" element={<Workflow />} />
+          <Route path="/roles" element={<RolesResponsibilities />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/intake" element={<Intake />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
