@@ -26,15 +26,26 @@ type ResponsibilityTemplate = {
   responsibilities: string[]
 }
 
+type Client = {
+  id: string
+  name: string
+  email: string
+  company?: string
+  phone?: string
+}
+
 const Settings = () => {
   const { profile, hasRole } = useAuth()
   const { toast } = useToast()
   const [categories, setCategories] = useState<Category[]>([])
   const [responsibilities, setResponsibilities] = useState<ResponsibilityTemplate[]>([])
+  const [clients, setClients] = useState<Client[]>([])
   const [newCategory, setNewCategory] = useState({ name: "", description: "" })
   const [newResponsibility, setNewResponsibility] = useState({ role: "", responsibilities: "" })
+  const [newClient, setNewClient] = useState({ name: "", email: "", company: "", phone: "" })
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false)
   const [responsibilityDialogOpen, setResponsibilityDialogOpen] = useState(false)
+  const [clientDialogOpen, setClientDialogOpen] = useState(false)
 
   // Check if user is admin
   const isAdmin = hasRole('Admin')
@@ -42,6 +53,7 @@ const Settings = () => {
   useEffect(() => {
     if (isAdmin) {
       loadSettings()
+      loadClients()
     }
   }, [isAdmin])
 
@@ -70,6 +82,24 @@ const Settings = () => {
       toast({
         title: 'Error',
         description: 'Failed to load settings',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const loadClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setClients(data || [])
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load clients',
         variant: 'destructive'
       })
     }
@@ -183,6 +213,69 @@ const Settings = () => {
     saveResponsibilities(updated)
   }
 
+  const addClient = async () => {
+    if (!newClient.name || !newClient.email) {
+      toast({
+        title: 'Error',
+        description: 'Name and email are required',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .insert([{
+          name: newClient.name,
+          email: newClient.email,
+          company: newClient.company || null,
+          phone: newClient.phone || null
+        }])
+
+      if (error) throw error
+
+      toast({
+        title: 'Success',
+        description: 'Client added successfully'
+      })
+      
+      setNewClient({ name: "", email: "", company: "", phone: "" })
+      setClientDialogOpen(false)
+      loadClients()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to add client',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const deleteClient = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      toast({
+        title: 'Success',
+        description: 'Client deleted successfully'
+      })
+      
+      loadClients()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete client',
+        variant: 'destructive'
+      })
+    }
+  }
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen bg-background">
@@ -212,9 +305,10 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="categories" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="categories">Project Categories</TabsTrigger>
             <TabsTrigger value="responsibilities">Role Responsibilities</TabsTrigger>
+            <TabsTrigger value="clients">Clients</TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories">
@@ -383,6 +477,111 @@ const Settings = () => {
                     </div>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="clients">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Client Management</CardTitle>
+                    <CardDescription>Add and manage your clients</CardDescription>
+                  </div>
+                  <Dialog open={clientDialogOpen} onOpenChange={setClientDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Client
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Client</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="clientName">Client Name *</Label>
+                          <Input
+                            id="clientName"
+                            value={newClient.name}
+                            onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+                            placeholder="John Doe"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientEmail">Email *</Label>
+                          <Input
+                            id="clientEmail"
+                            type="email"
+                            value={newClient.email}
+                            onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
+                            placeholder="john@example.com"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientCompany">Company</Label>
+                          <Input
+                            id="clientCompany"
+                            value={newClient.company}
+                            onChange={(e) => setNewClient({ ...newClient, company: e.target.value })}
+                            placeholder="Acme Corp"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientPhone">Phone</Label>
+                          <Input
+                            id="clientPhone"
+                            value={newClient.phone}
+                            onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
+                            placeholder="+1 (555) 123-4567"
+                          />
+                        </div>
+                        <Button onClick={addClient} className="w-full">Add Client</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Company</TableHead>
+                      <TableHead>Phone</TableHead>
+                      <TableHead className="w-24">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {clients.map((client) => (
+                      <TableRow key={client.id}>
+                        <TableCell className="font-medium">{client.name}</TableCell>
+                        <TableCell>{client.email}</TableCell>
+                        <TableCell className="text-muted-foreground">{client.company || '-'}</TableCell>
+                        <TableCell className="text-muted-foreground">{client.phone || '-'}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteClient(client.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {clients.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                          No clients added yet. Click "Add Client" to get started.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>
