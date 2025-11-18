@@ -38,33 +38,33 @@ export function Navigation({ className }: NavigationProps) {
             
             <div className="hidden md:flex items-center space-x-6">
               <Link to="/dashboard">
-                <Button variant="ghost" className={isActive('/dashboard') ? "text-blue" : "text-muted-foreground hover:text-blue"}>
+                <Button variant="ghost" className={isActive('/dashboard') ? "text-primary" : "text-muted-foreground hover:text-primary"}>
                   Dashboard
                 </Button>
               </Link>
               <Link to="/projects">
-                <Button variant="ghost" className={isActive('/projects') ? "text-blue" : "text-muted-foreground hover:text-blue"}>
+                <Button variant="ghost" className={isActive('/projects') ? "text-primary" : "text-muted-foreground hover:text-primary"}>
                   Projects
                 </Button>
               </Link>
               <Link to="/clients">
-                <Button variant="ghost" className={isActive('/clients') ? "text-blue" : "text-muted-foreground hover:text-blue"}>
+                <Button variant="ghost" className={isActive('/clients') ? "text-primary" : "text-muted-foreground hover:text-primary"}>
                   Clients
                 </Button>
               </Link>
               <Link to="/team">
-                <Button variant="ghost" className={isActive('/team') ? "text-blue" : "text-muted-foreground hover:text-blue"}>
+                <Button variant="ghost" className={isActive('/team') ? "text-primary" : "text-muted-foreground hover:text-primary"}>
                   Management
                 </Button>
               </Link>
               <Link to="/roles">
-                <Button variant="ghost" className={isActive('/roles') ? "text-blue" : "text-muted-foreground hover:text-blue"}>
+                <Button variant="ghost" className={isActive('/roles') ? "text-primary" : "text-muted-foreground hover:text-primary"}>
                   Roles
                 </Button>
               </Link>
               {roles && roles.some(r => r.role === 'Admin') && (
                 <Link to="/settings">
-                  <Button variant="ghost" className={isActive('/settings') ? "text-blue" : "text-muted-foreground hover:text-blue"}>
+                  <Button variant="ghost" className={isActive('/settings') ? "text-primary" : "text-muted-foreground hover:text-primary"}>
                     Settings
                   </Button>
                 </Link>
