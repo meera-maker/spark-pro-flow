@@ -189,8 +189,6 @@ export function ClientManagement() {
     setIsEditDialogOpen(true)
   }
 
-  const canManageClients = hasRole('Admin') || hasRole('Lead')
-
   return (
     <div className="space-y-6">
       <Card>
@@ -205,8 +203,7 @@ export function ClientManagement() {
                 Manage your clients and their information
               </CardDescription>
             </div>
-            {canManageClients && (
-              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="h-4 w-4 mr-2" />
@@ -307,7 +304,6 @@ export function ClientManagement() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -319,7 +315,7 @@ export function ClientManagement() {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Added</TableHead>
-                {canManageClients && <TableHead>Actions</TableHead>}
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -332,9 +328,8 @@ export function ClientManagement() {
                   <TableCell>
                     {new Date(client.created_at).toLocaleDateString()}
                   </TableCell>
-                  {canManageClients && (
-                    <TableCell>
-                      <div className="flex gap-2">
+                  <TableCell>
+                    <div className="flex gap-2">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -365,10 +360,9 @@ export function ClientManagement() {
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  )}
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
