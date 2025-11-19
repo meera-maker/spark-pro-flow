@@ -1,5 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { Database } from "@/integrations/supabase/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -189,8 +191,12 @@ const mockNotifications: Notification[] = [
   }
 ]
 
+type Project = Database['public']['Tables']['projects']['Row']
+
 export function ProjectDetail() {
   const { projectId } = useParams()
+  const [project, setProject] = useState<Project | null>(null)
+  const [loading, setLoading] = useState(true)
   const [revisionNote, setRevisionNote] = useState("")
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
   const [currentStage, setCurrentStage] = useState<ProjectStage>('design')
@@ -198,9 +204,88 @@ export function ProjectDetail() {
   const { currentUser, getStatusColor, users } = useWorkflow()
   const { toast } = useToast()
 
-  const handleStatusChange = (newStatus: WorkflowStatus, assignedTo?: string, notes?: string) => {
-    console.log(`Status changing to: ${newStatus}, assigned to: ${assignedTo}`, notes)
-    // In real app, this would make an API call to update the project workflow
+  useEffect(() => {
+    if (projectId) {
+      fetchProject()
+    }
+  }, [projectId])
+
+  const fetchProject = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('project_code', projectId)
+        .single()
+
+      if (error) throw error
+      setProject(data)
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to load project details',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-lg">Loading project details...</div>
+      </div>
+    )
+  }
+
+  if (!project) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-lg text-muted-foreground">Project not found</div>
+      </div>
+    )
+  }
+
+  const handleStatusChange = async (newStatus: WorkflowStatus, assignedTo?: string, notes?: string) => {
+    try {
+      const statusMap: Record<WorkflowStatus, string> = {
+        'intake': 'New',
+        'assigned-to-cs': 'New',
+        'assigned-to-design-head': 'Lead Review',
+        'assigned-to-designer': 'In Progress',
+        'in-design': 'In Progress',
+        'design-complete': 'In Progress',
+        'in-qc': 'QC Review',
+        'qc-approved': 'QC Review',
+        'qc-revision-needed': 'In Progress',
+        'sent-to-client': 'Client Review',
+        'client-approved': 'Client Review',
+        'revision-requested': 'In Progress',
+        'completed': 'Completed'
+      }
+      
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: statusMap[newStatus] })
+        .eq('project_code', projectId)
+      
+      if (error) throw error
+      
+      toast({
+        title: 'Success',
+        description: 'Project status updated'
+      })
+      
+      fetchProject()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update project status',
+        variant: 'destructive'
+      })
+    }
   }
 
   const handleMarkAsRead = (notificationId: string) => {
@@ -278,23 +363,23 @@ export function ProjectDetail() {
       <div className="flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-primary">{mockProject.id}</h1>
-            <Badge className={getStatusColor(mockProject.workflowStatus)}>
-              {formatWorkflowStatus(mockProject.workflowStatus)}
+            <h1 className="text-3xl font-bold text-primary">{project.project_code}</h1>
+            <Badge className={getStatusColor(project.status === 'New' ? 'intake' : 'in-design')}>
+              {project.status}
             </Badge>
           </div>
-          <p className="text-xl text-muted-foreground">{mockProject.client}</p>
-          <p className="text-sm text-muted-foreground">{mockProject.creativeType}</p>
+          <p className="text-xl text-muted-foreground">{project.client_name}</p>
+          <p className="text-sm text-muted-foreground">{project.creative_type}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Currently assigned to: <span className="font-medium">{getUserName(mockProject.currentAssignee)}</span>
+            Currently assigned to: <span className="font-medium">{getUserName(project.designer_id || '')}</span>
           </p>
         </div>
         
         <div className="flex gap-2">
           <StatusActions
-            projectId={mockProject.id}
-            currentStatus={mockProject.workflowStatus}
-            currentAssignee={mockProject.currentAssignee}
+            projectId={project.project_code}
+            currentStatus={project.status === 'New' ? 'intake' : 'in-design'}
+            currentAssignee={project.designer_id || ''}
             onStatusChange={handleStatusChange}
           />
         </div>
@@ -315,38 +400,18 @@ export function ProjectDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed">{mockProject.brief}</p>
+              <p className="text-sm leading-relaxed">{project.brief}</p>
               
-              {mockProject.referenceLinks.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">Reference Links:</h4>
-                  <div className="space-y-1">
-                    {mockProject.referenceLinks.map((link, index) => (
-                      <a 
-                        key={index}
-                        href={link} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-sm text-blue hover:underline"
-                      >
-                        <ExternalLink className="h-3 w-3" aria-label="External link icon" />
-                        {link}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {mockProject.driveFolderUrl && (
+              {project.drive_folder_url && (
                 <div className="mt-4">
                   <a 
-                    href={mockProject.driveFolderUrl}
+                    href={project.drive_folder_url}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-blue hover:underline"
+                    className="flex items-center gap-2 text-primary hover:underline"
                   >
-                    <ExternalLink className="h-3 w-3" aria-label="External link icon" />
-                    Google Drive Assets
+                    <ExternalLink className="h-4 w-4" />
+                    View Drive Folder
                   </a>
                 </div>
               )}
@@ -371,7 +436,7 @@ export function ProjectDetail() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Time Tracking */}
-          <TimeTrackingPanel projectId={mockProject.id} projectCode={mockProject.id} />
+          <TimeTrackingPanel projectId={project.id} projectCode={project.project_code} />
 
           {/* Notifications */}
           <NotificationsPanel />
@@ -387,7 +452,7 @@ export function ProjectDetail() {
                 <div>
                   <p className="text-sm font-medium">Deadline</p>
                   <p className="text-sm text-red-600 font-medium">
-                    {new Date(mockProject.deadline).toLocaleDateString()}
+                    {new Date(project.deadline).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -396,7 +461,7 @@ export function ProjectDetail() {
                 <User className="h-4 w-4 text-muted-foreground" aria-label="User icon" />
                 <div>
                   <p className="text-sm font-medium">Assigned To</p>
-                  <p className="text-sm text-muted-foreground">{getUserName(mockProject.currentAssignee)}</p>
+                  <p className="text-sm text-muted-foreground">{getUserName(project.designer_id || '')}</p>
                 </div>
               </div>
               
@@ -404,8 +469,8 @@ export function ProjectDetail() {
                 <MessageCircle className="h-4 w-4 text-muted-foreground" aria-label="Message icon" />
                 <div>
                   <p className="text-sm font-medium">Revisions</p>
-                  <Badge variant={mockProject.revisionCount > 2 ? "destructive" : "secondary"}>
-                    {mockProject.revisionCount}
+                  <Badge variant={(project.revision_count || 0) > 2 ? "destructive" : "secondary"}>
+                    {project.revision_count || 0}
                   </Badge>
                 </div>
               </div>
