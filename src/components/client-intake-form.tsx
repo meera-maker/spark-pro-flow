@@ -15,6 +15,8 @@ import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/useAuth"
 import { Database } from "@/integrations/supabase/types"
+import { projectIntakeSchema } from "@/lib/validation-schemas"
+import { z } from "zod"
 
 type Client = Database['public']['Tables']['clients']['Row']
 type User = Database['public']['Tables']['users']['Row']
@@ -65,21 +67,38 @@ export function ClientIntakeForm() {
       if (!client) {
         throw new Error("Please select a client")
       }
+
+      if (!date) {
+        throw new Error("Please select a deadline")
+      }
+      
+      // Validate input data
+      const projectData = {
+        client_name: client.name,
+        client_email: client.email,
+        project_code: `PROJ-${Date.now()}`,
+        creative_type: creativeType,
+        brief: formData.get('brief') as string,
+        deadline: date.toISOString(),
+        drive_folder_url: (formData.get('drive-folder') as string) || '',
+      }
+
+      const validated = projectIntakeSchema.parse(projectData)
       
       // Insert project into database
       const { data, error } = await supabase
         .from('projects')
         .insert([{
-          client_name: client.name,
-          client_email: client.email,
-          creative_type: creativeType,
-          deadline: date?.toISOString() as string,
-          brief: formData.get('brief') as string,
-          drive_folder_url: (formData.get('drive-folder') as string) || undefined,
+          client_name: validated.client_name,
+          client_email: validated.client_email,
+          creative_type: validated.creative_type,
+          deadline: validated.deadline,
+          brief: validated.brief,
+          drive_folder_url: validated.drive_folder_url || null,
           status: 'New',
           lead_id: user?.id || undefined,
           designer_id: assignedTo || null,
-          project_code: `PROJ-${Date.now()}`
+          project_code: validated.project_code
         }])
         .select()
         .single()
@@ -95,11 +114,19 @@ export function ClientIntakeForm() {
         navigate('/projects')
       }, 1500)
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create project",
-        variant: "destructive"
-      })
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive"
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create project",
+          variant: "destructive"
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
