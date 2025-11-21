@@ -13,6 +13,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Edit, Trash2, Users } from 'lucide-react'
 import { Database } from '@/integrations/supabase/types'
+import { userSchema } from '@/lib/validation-schemas'
+import { z } from 'zod'
 
 type User = Database['public']['Tables']['users']['Row']
 type UserInsert = Database['public']['Tables']['users']['Insert']
@@ -71,12 +73,15 @@ export function TeamManagement() {
 
     setLoading(true)
     try {
+      // Validate input
+      const validated = userSchema.parse(formData)
+
       const { error } = await supabase
         .from('users')
         .insert([{
-          name: formData.name,
-          email: formData.email,
-          role: formData.role
+          name: validated.name,
+          email: validated.email,
+          role: validated.role
         }])
 
       if (error) throw error
@@ -90,11 +95,19 @@ export function TeamManagement() {
       setFormData({ name: '', email: '', role: '' })
       fetchUsers()
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      })
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Validation Error',
+          description: error.errors[0].message,
+          variant: 'destructive'
+        })
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive'
+        })
+      }
     } finally {
       setLoading(false)
     }
@@ -112,12 +125,15 @@ export function TeamManagement() {
 
     setLoading(true)
     try {
+      // Validate input
+      const validated = userSchema.parse(formData)
+
       const { error } = await supabase
         .from('users')
         .update({
-          name: formData.name,
-          email: formData.email,
-          role: formData.role
+          name: validated.name,
+          email: validated.email,
+          role: validated.role
         })
         .eq('id', editingUser.id)
 
@@ -133,11 +149,19 @@ export function TeamManagement() {
       setFormData({ name: '', email: '', role: '' })
       fetchUsers()
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      })
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Validation Error',
+          description: error.errors[0].message,
+          variant: 'destructive'
+        })
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive'
+        })
+      }
     } finally {
       setLoading(false)
     }

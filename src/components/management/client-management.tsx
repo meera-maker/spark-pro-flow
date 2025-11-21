@@ -12,6 +12,8 @@ import { useAuth } from '@/hooks/useAuth'
 import { useToast } from '@/hooks/use-toast'
 import { Plus, Edit, Trash2, Building2 } from 'lucide-react'
 import { Database } from '@/integrations/supabase/types'
+import { clientSchema } from '@/lib/validation-schemas'
+import { z } from 'zod'
 
 type Client = Database['public']['Tables']['clients']['Row']
 
@@ -75,17 +77,20 @@ export function ClientManagement() {
 
     setLoading(true)
     try {
+      // Validate input
+      const validated = clientSchema.parse(formData)
+
       const { error } = await supabase
         .from('clients')
         .insert([{
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone || null,
-          company: formData.company || null,
-          address: formData.address || null,
-          billing_address: formData.billing_address || null,
-          tax_id: formData.tax_id || null,
-          payment_terms: formData.payment_terms || 'Net 30',
+          name: validated.name,
+          email: validated.email,
+          phone: validated.phone || null,
+          company: validated.company || null,
+          address: validated.address || null,
+          billing_address: validated.billing_address || null,
+          tax_id: validated.tax_id || null,
+          payment_terms: validated.payment_terms || 'Net 30',
           created_by: profile?.id
         }])
 
@@ -100,11 +105,19 @@ export function ClientManagement() {
       resetForm()
       fetchClients()
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      })
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Validation Error',
+          description: error.errors[0].message,
+          variant: 'destructive'
+        })
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive'
+        })
+      }
     } finally {
       setLoading(false)
     }
@@ -115,17 +128,20 @@ export function ClientManagement() {
 
     setLoading(true)
     try {
+      // Validate input
+      const validated = clientSchema.parse(formData)
+
       const { error } = await supabase
         .from('clients')
         .update({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone || null,
-          company: formData.company || null,
-          address: formData.address || null,
-          billing_address: formData.billing_address || null,
-          tax_id: formData.tax_id || null,
-          payment_terms: formData.payment_terms || 'Net 30'
+          name: validated.name,
+          email: validated.email,
+          phone: validated.phone || null,
+          company: validated.company || null,
+          address: validated.address || null,
+          billing_address: validated.billing_address || null,
+          tax_id: validated.tax_id || null,
+          payment_terms: validated.payment_terms || 'Net 30'
         })
         .eq('id', editingClient.id)
 
@@ -141,11 +157,19 @@ export function ClientManagement() {
       resetForm()
       fetchClients()
     } catch (error: any) {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      })
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Validation Error',
+          description: error.errors[0].message,
+          variant: 'destructive'
+        })
+      } else {
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive'
+        })
+      }
     } finally {
       setLoading(false)
     }
