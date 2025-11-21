@@ -198,15 +198,20 @@ export function ProjectDetail() {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [revisionNote, setRevisionNote] = useState("")
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications)
+  const [notifications, setNotifications] = useState<Notification[]>([])
   const [currentStage, setCurrentStage] = useState<ProjectStage>('design')
-  const [revisions, setRevisions] = useState<Revision[]>(mockRevisions)
+  const [revisions, setRevisions] = useState<Revision[]>([])
+  const [workflowSteps, setWorkflowSteps] = useState<WorkflowStep[]>([])
+  const [assignmentHistory, setAssignmentHistory] = useState<AssignmentRecord[]>([])
   const { currentUser, getStatusColor, users } = useWorkflow()
   const { toast } = useToast()
 
   useEffect(() => {
     if (projectId) {
       fetchProject()
+      fetchRevisions()
+      fetchWorkflowLog()
+      fetchNotifications()
     }
   }, [projectId])
 
@@ -229,6 +234,126 @@ export function ProjectDetail() {
       })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRevisions = async () => {
+    try {
+      const { data: project_data } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('project_code', projectId)
+        .single()
+
+      if (!project_data) return
+
+      const { data, error } = await supabase
+        .from('revisions')
+        .select('*')
+        .eq('project_id', project_data.id)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      // Fetch users for name mapping
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, name')
+
+      const userMap = new Map(usersData?.map(u => [u.id, u.name]) || [])
+
+      const transformedRevisions: Revision[] = (data || []).map(rev => ({
+        id: rev.id,
+        version: `v${rev.version_no}`,
+        uploadedBy: userMap.get(rev.uploaded_by || '') || 'Unknown',
+        uploadedById: rev.uploaded_by || '',
+        timestamp: new Date(rev.created_at || ''),
+        type: 'design' as const,
+        notes: rev.note || '',
+        fileUrl: rev.file_url,
+        fileType: 'pdf' as const,
+        status: rev.status === 'Approved' ? 'approved' : rev.status === 'Rejected' ? 'rejected' : 'pending'
+      }))
+
+      setRevisions(transformedRevisions)
+    } catch (error: any) {
+      console.error('Error fetching revisions:', error)
+    }
+  }
+
+  const fetchWorkflowLog = async () => {
+    try {
+      const { data: project_data } = await supabase
+        .from('projects')
+        .select('id')
+        .eq('project_code', projectId)
+        .single()
+
+      if (!project_data) return
+
+      const { data, error } = await supabase
+        .from('project_workflow_log')
+        .select('*')
+        .eq('project_id', project_data.id)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+
+      // Fetch all users for name mapping
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, name')
+
+      const userMap = new Map(usersData?.map(u => [u.id, u.name]) || [])
+
+      const transformedSteps: WorkflowStep[] = (data || []).map(log => ({
+        id: log.id,
+        status: 'in-design' as WorkflowStatus,
+        assignedTo: log.to_user_id || '',
+        assignedBy: log.from_user_id || '',
+        timestamp: new Date(log.created_at || ''),
+        notes: log.notes || ''
+      }))
+
+      setWorkflowSteps(transformedSteps)
+
+      const transformedAssignments: AssignmentRecord[] = (data || []).map(log => ({
+        id: log.id,
+        fromUser: userMap.get(log.from_user_id || '') || 'System',
+        toUser: userMap.get(log.to_user_id || '') || 'Unknown',
+        timestamp: new Date(log.created_at || ''),
+        type: log.action.includes('transfer') ? 'transfer' : 'assignment',
+        role: log.to_role || 'Designer',
+        notes: log.notes || ''
+      }))
+
+      setAssignmentHistory(transformedAssignments)
+    } catch (error: any) {
+      console.error('Error fetching workflow log:', error)
+    }
+  }
+
+  const fetchNotifications = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) throw error
+
+      const transformedNotifications: Notification[] = (data || []).map(notif => ({
+        type: notif.type as any,
+        message: notif.message,
+        timestamp: new Date(notif.created_at || ''),
+        read: notif.read_flag || false,
+        userId: notif.user_id || ''
+      }))
+
+      setNotifications(transformedNotifications)
+    } catch (error: any) {
+      console.error('Error fetching notifications:', error)
     }
   }
 
@@ -419,10 +544,10 @@ export function ProjectDetail() {
           </Card>
 
           {/* Workflow Timeline */}
-          <WorkflowTimeline steps={mockWorkflowSteps} />
+          <WorkflowTimeline steps={workflowSteps} />
 
           {/* Assignment & Transfer History */}
-          <AssignmentHistory assignments={mockAssignmentHistory} />
+          <AssignmentHistory assignments={assignmentHistory} />
 
           {/* Detailed Revision History */}
           <RevisionDetailView
@@ -488,8 +613,8 @@ export function ProjectDetail() {
                   <AvatarFallback>SC</AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="font-medium">{mockProject.client}</p>
-                  <p className="text-sm text-muted-foreground">{mockProject.clientEmail}</p>
+                  <p className="font-medium">{project.client_name}</p>
+                  <p className="text-sm text-muted-foreground">{project.client_email}</p>
                 </div>
               </div>
               
