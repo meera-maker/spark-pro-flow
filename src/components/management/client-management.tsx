@@ -39,6 +39,38 @@ export function ClientManagement() {
 
   useEffect(() => {
     fetchClients()
+
+    // Set up real-time subscription for clients
+    const channel = supabase
+      .channel('clients-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'clients'
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setClients((current) => [payload.new as Client, ...current])
+          } else if (payload.eventType === 'UPDATE') {
+            setClients((current) =>
+              current.map((client) =>
+                client.id === payload.new.id ? (payload.new as Client) : client
+              )
+            )
+          } else if (payload.eventType === 'DELETE') {
+            setClients((current) =>
+              current.filter((client) => client.id !== payload.old.id)
+            )
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const fetchClients = async () => {
@@ -103,7 +135,6 @@ export function ClientManagement() {
       
       setIsAddDialogOpen(false)
       resetForm()
-      fetchClients()
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -155,7 +186,6 @@ export function ClientManagement() {
       setIsEditDialogOpen(false)
       setEditingClient(null)
       resetForm()
-      fetchClients()
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
@@ -188,7 +218,6 @@ export function ClientManagement() {
         title: 'Success',
         description: 'Client deleted successfully'
       })
-      fetchClients()
     } catch (error: any) {
       toast({
         title: 'Error',
