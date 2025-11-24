@@ -50,7 +50,7 @@ export function ProjectsDashboard() {
   }
 
   // Handle loading state
-  if (!currentUser || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg">Loading...</div>
@@ -140,6 +140,7 @@ export function ProjectsDashboard() {
 
   // Role-based dashboard view
   const getMyProjects = () => {
+    if (!currentUser) return []
     return projects.filter(project => 
       project.designer_id === currentUser.id || 
       project.lead_id === currentUser.id ||
@@ -148,6 +149,7 @@ export function ProjectsDashboard() {
   }
 
   const getProjectsForMyRole = () => {
+    if (!currentUser) return projects
     switch (currentUser.role) {
       case 'Admin':
         return projects // Admins see all projects
@@ -173,7 +175,7 @@ export function ProjectsDashboard() {
         <div>
           <h1 className="text-3xl font-bold text-primary">Project Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome, {currentUser.name} ({currentUser.role})
+          {currentUser ? `Welcome, ${currentUser.name} (${currentUser.role})` : 'Welcome'}
         </p>
         </div>
         
