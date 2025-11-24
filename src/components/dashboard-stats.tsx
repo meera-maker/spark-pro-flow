@@ -95,7 +95,7 @@ export function DashboardStats() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Link to="/team?tab=projects">
+        <Link to="/projects">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
@@ -108,7 +108,7 @@ export function DashboardStats() {
           </Card>
         </Link>
 
-        <Link to="/team?tab=projects">
+        <Link to="/projects">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
@@ -121,7 +121,7 @@ export function DashboardStats() {
           </Card>
         </Link>
 
-        <Link to="/team?tab=projects">
+        <Link to="/projects">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Completed</CardTitle>
@@ -134,7 +134,7 @@ export function DashboardStats() {
           </Card>
         </Link>
 
-        <Link to="/team?tab=clients">
+        <Link to="/clients">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Clients</CardTitle>
@@ -147,7 +147,7 @@ export function DashboardStats() {
           </Card>
         </Link>
 
-        <Link to="/team?tab=team">
+        <Link to="/team">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Team Members</CardTitle>
@@ -160,7 +160,7 @@ export function DashboardStats() {
           </Card>
         </Link>
 
-        <Link to="/team?tab=billing">
+        <Link to="/settings">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Invoices</CardTitle>
@@ -173,7 +173,7 @@ export function DashboardStats() {
           </Card>
         </Link>
 
-        <Link to="/team?tab=billing">
+        <Link to="/settings">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending Invoices</CardTitle>
@@ -186,7 +186,7 @@ export function DashboardStats() {
           </Card>
         </Link>
 
-        <Link to="/team?tab=billing">
+        <Link to="/settings">
           <Card className="hover:shadow-lg transition-shadow cursor-pointer">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Revenue</CardTitle>
@@ -206,25 +206,25 @@ export function DashboardStats() {
           <CardTitle>Quick Actions</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Link to="/team?tab=team">
+          <Link to="/team">
             <Button variant="outline" className="w-full justify-start">
               <Users className="h-4 w-4 mr-2" />
               Manage Team
             </Button>
           </Link>
-          <Link to="/team?tab=clients">
+          <Link to="/clients">
             <Button variant="outline" className="w-full justify-start">
               <Building2 className="h-4 w-4 mr-2" />
               Manage Clients
             </Button>
           </Link>
-          <Link to="/team?tab=projects">
+          <Link to="/projects">
             <Button variant="outline" className="w-full justify-start">
               <FolderKanban className="h-4 w-4 mr-2" />
               Manage Projects
             </Button>
           </Link>
-          <Link to="/team?tab=billing">
+          <Link to="/settings">
             <Button variant="outline" className="w-full justify-start">
               <Receipt className="h-4 w-4 mr-2" />
               Create Invoice
@@ -238,7 +238,7 @@ export function DashboardStats() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Recent Projects</CardTitle>
-            <Link to="/team?tab=projects">
+            <Link to="/projects">
               <Button variant="ghost" size="sm">View All</Button>
             </Link>
           </div>
@@ -248,7 +248,7 @@ export function DashboardStats() {
             {projects.slice(0, 5).map((project) => (
               <Link 
                 key={project.id} 
-                to={`/projects/${project.id}`}
+                to={`/projects/${project.project_code}`}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
               >
                 <div>
