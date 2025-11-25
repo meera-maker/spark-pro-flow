@@ -14,6 +14,7 @@ import { Plus, Edit, Trash2, Building2 } from 'lucide-react'
 import { Database } from '@/integrations/supabase/types'
 import { clientSchema } from '@/lib/validation-schemas'
 import { z } from 'zod'
+import { AddDummyData } from '@/components/add-dummy-data'
 
 type Client = Database['public']['Tables']['clients']['Row']
 
@@ -256,13 +257,15 @@ export function ClientManagement() {
                 Manage your clients and their information
               </CardDescription>
             </div>
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Client
-                  </Button>
-                </DialogTrigger>
+            <div className="flex gap-2">
+              <AddDummyData onDataAdded={fetchClients} />
+              <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Client
+                    </Button>
+                  </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
                     <DialogTitle>Add Client</DialogTitle>
@@ -357,6 +360,7 @@ export function ClientManagement() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
