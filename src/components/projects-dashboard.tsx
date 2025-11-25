@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit } from "lucide-react"
 import { Database } from "@/integrations/supabase/types"
 import { QuickAddProjectDialog } from "@/components/quick-add-project-dialog"
+import { AddDummyData } from "@/components/add-dummy-data"
 
 type Project = Database['public']['Tables']['projects']['Row']
 
@@ -27,6 +28,38 @@ export function ProjectsDashboard() {
 
   useEffect(() => {
     fetchProjects()
+
+    // Set up real-time subscription for projects
+    const channel = supabase
+      .channel('projects-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects'
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setProjects((current) => [payload.new as Project, ...current])
+          } else if (payload.eventType === 'UPDATE') {
+            setProjects((current) =>
+              current.map((project) =>
+                project.id === payload.new.id ? (payload.new as Project) : project
+              )
+            )
+          } else if (payload.eventType === 'DELETE') {
+            setProjects((current) =>
+              current.filter((project) => project.id !== payload.old.id)
+            )
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   const fetchProjects = async () => {
@@ -180,6 +213,7 @@ export function ProjectsDashboard() {
         </div>
         
         <div className="flex gap-2">
+          <AddDummyData onDataAdded={fetchProjects} />
           <QuickAddProjectDialog onProjectAdded={fetchProjects} />
           <Link to="/intake">
             <Button variant="outline">
