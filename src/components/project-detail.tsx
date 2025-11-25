@@ -391,12 +391,36 @@ export function ProjectDetail() {
         'completed': 'Completed'
       }
       
+      const updateData: any = { status: statusMap[newStatus] }
+      
+      // If assigning to someone, update the appropriate field
+      if (assignedTo) {
+        if (newStatus.includes('designer') || newStatus === 'in-design') {
+          updateData.designer_id = assignedTo
+        } else if (newStatus.includes('design-head') || newStatus === 'assigned-to-design-head') {
+          updateData.lead_id = assignedTo
+        }
+      }
+      
       const { error } = await supabase
         .from('projects')
-        .update({ status: statusMap[newStatus] })
+        .update(updateData)
         .eq('project_code', projectId)
       
       if (error) throw error
+      
+      // Log workflow change
+      if (project) {
+        await supabase
+          .from('project_workflow_log')
+          .insert({
+            project_id: project.id,
+            action: 'status_change',
+            from_user_id: currentUser?.id,
+            to_user_id: assignedTo,
+            notes: notes || `Status changed to ${statusMap[newStatus]}`
+          })
+      }
       
       toast({
         title: 'Success',
@@ -404,10 +428,48 @@ export function ProjectDetail() {
       })
       
       fetchProject()
+      fetchWorkflowLog()
     } catch (error: any) {
       toast({
         title: 'Error',
         description: 'Failed to update project status',
+        variant: 'destructive'
+      })
+    }
+  }
+
+  const handleCompleteProject = async () => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ status: 'Completed' })
+        .eq('project_code', projectId)
+      
+      if (error) throw error
+      
+      // Log workflow change
+      if (project) {
+        await supabase
+          .from('project_workflow_log')
+          .insert({
+            project_id: project.id,
+            action: 'completed',
+            from_user_id: currentUser?.id,
+            notes: 'Project marked as completed'
+          })
+      }
+      
+      toast({
+        title: 'Success',
+        description: 'Project marked as completed'
+      })
+      
+      fetchProject()
+      fetchWorkflowLog()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: 'Failed to complete project',
         variant: 'destructive'
       })
     }
@@ -501,6 +563,15 @@ export function ProjectDetail() {
         </div>
         
         <div className="flex gap-2">
+          {project.status !== 'Completed' && (
+            <Button 
+              onClick={handleCompleteProject}
+              variant="default"
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Mark as Complete
+            </Button>
+          )}
           <StatusActions
             projectId={project.project_code}
             currentStatus={project.status === 'New' ? 'intake' : 'in-design'}
