@@ -12,13 +12,18 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
   const addDummyClients = async () => {
     setLoadingClients(true)
     try {
-      // 5 additional diverse clients
+      // 10 diverse clients
       const dummyClients = [
         { name: 'Victoria Hayes', email: 'victoria.h@quantum.com', company: 'Quantum Digital', phone: '+1-555-0201', address: '852 Tech Valley, San Jose, CA 95110', payment_terms: 'Net 30' },
         { name: 'Christopher Park', email: 'chris.park@zenspace.com', company: 'ZenSpace Studios', phone: '+1-555-0202', address: '963 Creative Blvd, Brooklyn, NY 11201', payment_terms: 'Net 15' },
         { name: 'Sophia Ramirez', email: 'sophia@elevate.co', company: 'Elevate Brands', phone: '+1-555-0203', address: '741 Commerce Dr, Atlanta, GA 30301', payment_terms: 'Net 30' },
         { name: 'Daniel Foster', email: 'dan.foster@lumina.com', company: 'Lumina Group', phone: '+1-555-0204', address: '159 Market St, Philadelphia, PA 19101', payment_terms: 'Net 45' },
-        { name: 'Isabella Morgan', email: 'isabella@pulse.io', company: 'Pulse Media', phone: '+1-555-0205', address: '357 Innovation Way, Phoenix, AZ 85001', payment_terms: 'Net 30' }
+        { name: 'Isabella Morgan', email: 'isabella@pulse.io', company: 'Pulse Media', phone: '+1-555-0205', address: '357 Innovation Way, Phoenix, AZ 85001', payment_terms: 'Net 30' },
+        { name: 'Marcus Chen', email: 'marcus@techwave.io', company: 'TechWave Solutions', phone: '+1-555-0206', address: '428 Silicon Ave, Austin, TX 78701', payment_terms: 'Net 30' },
+        { name: 'Olivia Thompson', email: 'olivia@brandcraft.com', company: 'BrandCraft Agency', phone: '+1-555-0207', address: '672 Design St, Portland, OR 97201', payment_terms: 'Net 15' },
+        { name: 'James Rodriguez', email: 'james.r@nexusgroup.com', company: 'Nexus Group', phone: '+1-555-0208', address: '891 Business Park, Denver, CO 80201', payment_terms: 'Net 30' },
+        { name: 'Emma Watson', email: 'emma@digitaledge.com', company: 'Digital Edge Marketing', phone: '+1-555-0209', address: '234 Marketing Plaza, Seattle, WA 98101', payment_terms: 'Net 45' },
+        { name: 'Ryan Mitchell', email: 'ryan@creativehub.io', company: 'Creative Hub Studios', phone: '+1-555-0210', address: '567 Innovation Dr, Boston, MA 02101', payment_terms: 'Net 30' }
       ]
 
       const { data: insertedClients, error: clientError } = await supabase
@@ -138,7 +143,7 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
         size="sm"
       >
         <Users className="h-4 w-4 mr-2" />
-        {loadingClients ? 'Adding...' : 'Add 5 Clients'}
+        {loadingClients ? 'Adding...' : 'Add 10 Clients'}
       </Button>
       <Button 
         onClick={addDummyProjects} 
