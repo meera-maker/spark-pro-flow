@@ -6,28 +6,38 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { AssignmentDialog } from "@/components/workflow/assignment-dialog"
 import { useWorkflow } from "@/hooks/useWorkflow"
 import { WorkflowStatus } from "@/types/workflow"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit } from "lucide-react"
+import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit, CalendarIcon, X } from "lucide-react"
 import { Database } from "@/integrations/supabase/types"
 import { QuickAddProjectDialog } from "@/components/quick-add-project-dialog"
 import { AddDummyData } from "@/components/add-dummy-data"
+import { format } from "date-fns"
+import { cn } from "@/lib/utils"
 
 type Project = Database['public']['Tables']['projects']['Row']
+type Client = Database['public']['Tables']['clients']['Row']
 
 export function ProjectsDashboard() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [searchTerm, setSearchTerm] = useState("")
+  const [clientFilter, setClientFilter] = useState("all")
+  const [dateFrom, setDateFrom] = useState<Date | undefined>()
+  const [dateTo, setDateTo] = useState<Date | undefined>()
   const [projects, setProjects] = useState<Project[]>([])
+  const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const { currentUser, getStatusColor, users } = useWorkflow()
   const { toast } = useToast()
 
   useEffect(() => {
     fetchProjects()
+    fetchClients()
 
     // Set up real-time subscription for projects
     const channel = supabase
@@ -82,6 +92,20 @@ export function ProjectsDashboard() {
     }
   }
 
+  const fetchClients = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('name', { ascending: true })
+
+      if (error) throw error
+      setClients(data || [])
+    } catch (error: any) {
+      console.error('Failed to load clients:', error)
+    }
+  }
+
   // Handle loading state
   if (loading) {
     return (
@@ -109,8 +133,28 @@ export function ProjectsDashboard() {
     const matchesStatus = statusFilter === "all" || workflowStatus === statusFilter
     const matchesSearch = project.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          project.project_code?.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesStatus && matchesSearch
+    const matchesClient = clientFilter === "all" || project.client_name === clientFilter
+    
+    // Date range filter
+    let matchesDateRange = true
+    if (dateFrom || dateTo) {
+      const projectDate = new Date(project.created_at || project.deadline)
+      if (dateFrom && projectDate < dateFrom) matchesDateRange = false
+      if (dateTo && projectDate > dateTo) matchesDateRange = false
+    }
+    
+    return matchesStatus && matchesSearch && matchesClient && matchesDateRange
   })
+
+  const clearFilters = () => {
+    setStatusFilter("all")
+    setClientFilter("all")
+    setSearchTerm("")
+    setDateFrom(undefined)
+    setDateTo(undefined)
+  }
+
+  const hasActiveFilters = statusFilter !== "all" || clientFilter !== "all" || searchTerm !== "" || dateFrom || dateTo
 
   const getDeadlineUrgency = (deadline: string) => {
     const deadlineDate = new Date(deadline)
@@ -290,38 +334,153 @@ export function ProjectsDashboard() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search projects..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Filters</h3>
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="h-4 w-4 mr-2" />
+                  Clear All
+                </Button>
+              )}
             </div>
             
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by workflow status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="intake">Intake</SelectItem>
-                <SelectItem value="assigned-to-cs">Assigned to CS</SelectItem>
-                <SelectItem value="assigned-to-design-head">Assigned to Design Head</SelectItem>
-                <SelectItem value="assigned-to-designer">Assigned to Designer</SelectItem>
-                <SelectItem value="in-design">In Design</SelectItem>
-                <SelectItem value="design-complete">Design Complete</SelectItem>
-                <SelectItem value="in-qc">In QC</SelectItem>
-                <SelectItem value="qc-approved">QC Approved</SelectItem>
-                <SelectItem value="sent-to-client">Sent to Client</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+              {/* Search */}
+              <div className="lg:col-span-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                  <Input
+                    placeholder="Search projects or clients..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              
+              {/* Status Filter */}
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="intake">Intake</SelectItem>
+                  <SelectItem value="assigned-to-cs">Assigned to CS</SelectItem>
+                  <SelectItem value="assigned-to-design-head">Assigned to Design Head</SelectItem>
+                  <SelectItem value="assigned-to-designer">Assigned to Designer</SelectItem>
+                  <SelectItem value="in-design">In Design</SelectItem>
+                  <SelectItem value="design-complete">Design Complete</SelectItem>
+                  <SelectItem value="in-qc">In QC</SelectItem>
+                  <SelectItem value="qc-approved">QC Approved</SelectItem>
+                  <SelectItem value="sent-to-client">Sent to Client</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {/* Client Filter */}
+              <Select value={clientFilter} onValueChange={setClientFilter}>
+                <SelectTrigger>
+                  <User className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Client" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Clients</SelectItem>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.name}>
+                      {client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Date Range */}
+              <div className="flex gap-2">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "flex-1 justify-start text-left font-normal",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, "MMM dd") : "From"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "flex-1 justify-start text-left font-normal",
+                        !dateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateTo ? format(dateTo, "MMM dd") : "To"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={setDateTo}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {/* Active Filters Display */}
+            {hasActiveFilters && (
+              <div className="flex flex-wrap gap-2">
+                {statusFilter !== "all" && (
+                  <Badge variant="secondary" className="gap-1">
+                    Status: {formatWorkflowStatus(statusFilter as WorkflowStatus)}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => setStatusFilter("all")} />
+                  </Badge>
+                )}
+                {clientFilter !== "all" && (
+                  <Badge variant="secondary" className="gap-1">
+                    Client: {clientFilter}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => setClientFilter("all")} />
+                  </Badge>
+                )}
+                {searchTerm && (
+                  <Badge variant="secondary" className="gap-1">
+                    Search: {searchTerm}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => setSearchTerm("")} />
+                  </Badge>
+                )}
+                {dateFrom && (
+                  <Badge variant="secondary" className="gap-1">
+                    From: {format(dateFrom, "MMM dd, yyyy")}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => setDateFrom(undefined)} />
+                  </Badge>
+                )}
+                {dateTo && (
+                  <Badge variant="secondary" className="gap-1">
+                    To: {format(dateTo, "MMM dd, yyyy")}
+                    <X className="h-3 w-3 cursor-pointer" onClick={() => setDateTo(undefined)} />
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
         </CardHeader>
         
