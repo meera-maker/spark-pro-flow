@@ -53,30 +53,29 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
   const addDummyProjects = async () => {
     setLoadingProjects(true)
     try {
-      // Get existing users for assignment
+      // Get existing users for assignment (optional)
       const { data: users } = await supabase
         .from('users')
         .select('id, role')
         .limit(5)
 
-      if (!users || users.length === 0) {
-        throw new Error('No users found. Please create users first.')
-      }
+      const leadUser = users?.find(u => u.role === 'Lead') || users?.[0]
+      const designerUser = users?.find(u => u.role === 'Designer') || users?.[1] || users?.[0]
 
-      const leadUser = users.find(u => u.role === 'Lead') || users[0]
-      const designerUser = users.find(u => u.role === 'Designer') || users[1] || users[0]
+      // Dummy clients and projects data
+      const clientNames = [
+        { name: 'Victoria Hayes', email: 'victoria.h@quantum.com' },
+        { name: 'Christopher Park', email: 'chris.park@zenspace.com' },
+        { name: 'Sophia Ramirez', email: 'sophia@elevate.co' },
+        { name: 'Daniel Foster', email: 'dan.foster@lumina.com' },
+        { name: 'Isabella Morgan', email: 'isabella@pulse.io' },
+        { name: 'Marcus Chen', email: 'marcus@techwave.io' },
+        { name: 'Olivia Thompson', email: 'olivia@brandcraft.com' },
+        { name: 'James Rodriguez', email: 'james.r@nexusgroup.com' },
+        { name: 'Emma Watson', email: 'emma@digitaledge.com' },
+        { name: 'Ryan Mitchell', email: 'ryan@creativehub.io' }
+      ]
 
-      // Get existing clients to assign projects to
-      const { data: clients } = await supabase
-        .from('clients')
-        .select('name, email')
-        .limit(10)
-
-      if (!clients || clients.length === 0) {
-        throw new Error('No clients found. Please add clients first.')
-      }
-
-      // Dummy projects using existing clients
       const creativeTypes = ['Logo Design', 'Brand Identity', 'Social Media Graphics', 'Website Design', 'Marketing Collateral', 'Packaging Design', 'Presentation Design', 'Infographic', 'App UI Design', 'Email Template']
       const statuses = ['New', 'In Progress', 'Lead Review', 'QC Review', 'Client Review', 'Completed', 'In Progress', 'New', 'In Progress', 'Lead Review']
       const briefs = [
@@ -92,7 +91,7 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
         'Responsive email templates for newsletter campaign. Professional design matching brand guidelines.'
       ]
 
-      const dummyProjects = clients.slice(0, 10).map((client, index) => {
+      const dummyProjects = clientNames.map((client, index) => {
         const deadline = new Date()
         deadline.setDate(deadline.getDate() + (index * 2) + 3)
         
@@ -104,8 +103,8 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
           brief: briefs[index],
           status: statuses[index],
           deadline: deadline.toISOString(),
-          lead_id: leadUser.id,
-          designer_id: index % 3 === 0 ? designerUser.id : null,
+          lead_id: leadUser?.id || null,
+          designer_id: (index % 3 === 0 && designerUser) ? designerUser.id : null,
           revision_count: Math.floor(Math.random() * 4)
         }
       })
