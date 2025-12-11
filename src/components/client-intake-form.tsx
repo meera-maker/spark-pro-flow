@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, CalendarIcon } from "lucide-react"
+import { CalendarIcon, UserPlus } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
@@ -29,6 +30,9 @@ export function ClientIntakeForm() {
   const [users, setUsers] = useState<User[]>([])
   const [selectedClient, setSelectedClient] = useState<string>("")
   const [assignedTo, setAssignedTo] = useState<string>("")
+  const [showAddClient, setShowAddClient] = useState(false)
+  const [newClient, setNewClient] = useState({ name: '', email: '', company: '', phone: '' })
+  const [isAddingClient, setIsAddingClient] = useState(false)
   const navigate = useNavigate()
   const { toast } = useToast()
   const { user } = useAuth()
@@ -56,6 +60,51 @@ export function ClientIntakeForm() {
     if (data) setUsers(data)
   }
 
+  const handleAddClient = async () => {
+    if (!newClient.name || !newClient.email) {
+      toast({
+        title: "Error",
+        description: "Client name and email are required",
+        variant: "destructive"
+      })
+      return
+    }
+
+    setIsAddingClient(true)
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .insert([{
+          name: newClient.name,
+          email: newClient.email,
+          company: newClient.company || null,
+          phone: newClient.phone || null
+        }])
+        .select()
+        .single()
+
+      if (error) throw error
+
+      toast({
+        title: "Client Added!",
+        description: `${newClient.name} has been added successfully.`
+      })
+
+      await fetchClients()
+      setSelectedClient(data.id)
+      setNewClient({ name: '', email: '', company: '', phone: '' })
+      setShowAddClient(false)
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add client",
+        variant: "destructive"
+      })
+    } finally {
+      setIsAddingClient(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -72,7 +121,6 @@ export function ClientIntakeForm() {
         throw new Error("Please select a deadline")
       }
       
-      // Validate input data
       const projectData = {
         client_name: client.name,
         client_email: client.email,
@@ -85,7 +133,6 @@ export function ClientIntakeForm() {
 
       const validated = projectIntakeSchema.parse(projectData)
       
-      // Insert project into database
       const { data, error } = await supabase
         .from('projects')
         .insert([{
@@ -152,20 +199,84 @@ export function ClientIntakeForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="client-select">Select Client *</Label>
-                <Select required value={selectedClient} onValueChange={setSelectedClient}>
-                  <SelectTrigger className="border-2 focus:border-blue">
-                    <SelectValue placeholder="Choose from existing clients" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name} ({client.email})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select required value={selectedClient} onValueChange={setSelectedClient}>
+                    <SelectTrigger className="border-2 focus:border-blue flex-1">
+                      <SelectValue placeholder="Choose from existing clients" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name} ({client.email})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Dialog open={showAddClient} onOpenChange={setShowAddClient}>
+                    <DialogTrigger asChild>
+                      <Button type="button" variant="outline" size="icon" className="shrink-0">
+                        <UserPlus className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Add New Client</DialogTitle>
+                        <DialogDescription>
+                          Create a new client to assign to this project
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="client-name">Name *</Label>
+                          <Input
+                            id="client-name"
+                            value={newClient.name}
+                            onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
+                            placeholder="Client name"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="client-email">Email *</Label>
+                          <Input
+                            id="client-email"
+                            type="email"
+                            value={newClient.email}
+                            onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
+                            placeholder="client@example.com"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="client-company">Company</Label>
+                          <Input
+                            id="client-company"
+                            value={newClient.company}
+                            onChange={(e) => setNewClient({ ...newClient, company: e.target.value })}
+                            placeholder="Company name (optional)"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="client-phone">Phone</Label>
+                          <Input
+                            id="client-phone"
+                            value={newClient.phone}
+                            onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
+                            placeholder="Phone number (optional)"
+                          />
+                        </div>
+                        <Button 
+                          type="button" 
+                          onClick={handleAddClient} 
+                          disabled={isAddingClient}
+                          className="w-full"
+                        >
+                          {isAddingClient ? "Adding..." : "Add Client"}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  No clients? Add them in Team → Clients tab first
+                  Click <UserPlus className="inline h-3 w-3" /> to add a new client
                 </p>
               </div>
               
