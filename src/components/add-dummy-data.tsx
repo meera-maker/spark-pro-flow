@@ -1,8 +1,19 @@
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Users, FolderKanban, Receipt, FileStack } from "lucide-react"
+import { Users, FolderKanban, Receipt, FileStack, Trash2 } from "lucide-react"
 import { useState } from "react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
   const { toast } = useToast()
@@ -10,6 +21,7 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
   const [loadingProjects, setLoadingProjects] = useState(false)
   const [loadingInvoices, setLoadingInvoices] = useState(false)
   const [loadingRevisions, setLoadingRevisions] = useState(false)
+  const [loadingClear, setLoadingClear] = useState(false)
 
   const addDummyClients = async () => {
     setLoadingClients(true)
@@ -302,6 +314,35 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
     }
   }
 
+  const clearAllData = async () => {
+    setLoadingClear(true)
+    try {
+      // Delete in order due to foreign key constraints
+      await supabase.from('invoice_items').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('revisions').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('invoices').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('project_workflow_log').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('projects').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+      await supabase.from('clients').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+
+      toast({
+        title: 'Success',
+        description: 'All test data has been cleared'
+      })
+
+      onDataAdded?.()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to clear data',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoadingClear(false)
+    }
+  }
+
   return (
     <div className="flex flex-wrap gap-2">
       <Button 
@@ -340,6 +381,33 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
         <FileStack className="h-4 w-4 mr-2" />
         {loadingRevisions ? 'Adding...' : 'Add 10 Revisions'}
       </Button>
+      
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button 
+            variant="destructive"
+            size="sm"
+            disabled={loadingClear}
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            {loadingClear ? 'Clearing...' : 'Clear All Data'}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear All Test Data?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all projects, clients, invoices, revisions, and related data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={clearAllData} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Clear All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
