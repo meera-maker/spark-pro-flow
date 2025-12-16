@@ -13,12 +13,15 @@ import { useWorkflow } from "@/hooks/useWorkflow"
 import { WorkflowStatus } from "@/types/workflow"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit, CalendarIcon, X } from "lucide-react"
+import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit, CalendarIcon, X, Building2 } from "lucide-react"
 import { Database } from "@/integrations/supabase/types"
 import { QuickAddProjectDialog } from "@/components/quick-add-project-dialog"
 import { AddDummyData } from "@/components/add-dummy-data"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 
 type Project = Database['public']['Tables']['projects']['Row']
 type Client = Database['public']['Tables']['clients']['Row']
@@ -32,6 +35,14 @@ export function ProjectsDashboard() {
   const [projects, setProjects] = useState<Project[]>([])
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false)
+  const [clientLoading, setClientLoading] = useState(false)
+  const [clientForm, setClientForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: ''
+  })
   const { currentUser, getStatusColor, users } = useWorkflow()
   const { toast } = useToast()
 
@@ -103,6 +114,48 @@ export function ProjectsDashboard() {
       setClients(data || [])
     } catch (error: any) {
       console.error('Failed to load clients:', error)
+    }
+  }
+
+  const handleAddClient = async () => {
+    if (!clientForm.name || !clientForm.email) {
+      toast({
+        title: 'Error',
+        description: 'Name and email are required',
+        variant: 'destructive'
+      })
+      return
+    }
+
+    setClientLoading(true)
+    try {
+      const { error } = await supabase
+        .from('clients')
+        .insert([{
+          name: clientForm.name,
+          email: clientForm.email,
+          phone: clientForm.phone || null,
+          company: clientForm.company || null
+        }])
+
+      if (error) throw error
+
+      toast({
+        title: 'Success',
+        description: 'Client added successfully'
+      })
+      
+      setIsAddClientOpen(false)
+      setClientForm({ name: '', email: '', phone: '', company: '' })
+      fetchClients()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive'
+      })
+    } finally {
+      setClientLoading(false)
     }
   }
 
@@ -256,8 +309,72 @@ export function ProjectsDashboard() {
         </p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <AddDummyData onDataAdded={fetchProjects} />
+          
+          {/* Add Client Dialog */}
+          <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Building2 className="h-4 w-4 mr-2" />
+                Add Client
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Add New Client</DialogTitle>
+                <DialogDescription>Add a new client to your database</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="client-name">Name *</Label>
+                  <Input
+                    id="client-name"
+                    value={clientForm.name}
+                    onChange={(e) => setClientForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Client name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="client-email">Email *</Label>
+                  <Input
+                    id="client-email"
+                    type="email"
+                    value={clientForm.email}
+                    onChange={(e) => setClientForm(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="client@example.com"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="client-phone">Phone</Label>
+                  <Input
+                    id="client-phone"
+                    value={clientForm.phone}
+                    onChange={(e) => setClientForm(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="client-company">Company</Label>
+                  <Input
+                    id="client-company"
+                    value={clientForm.company}
+                    onChange={(e) => setClientForm(prev => ({ ...prev, company: e.target.value }))}
+                    placeholder="Company name"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddClientOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleAddClient} disabled={clientLoading}>
+                  {clientLoading ? 'Adding...' : 'Add Client'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          
           <QuickAddProjectDialog onProjectAdded={fetchProjects} />
           <Link to="/intake">
             <Button variant="outline">
