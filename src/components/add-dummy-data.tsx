@@ -1,18 +1,19 @@
 import { Button } from "@/components/ui/button"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Users, FolderKanban } from "lucide-react"
+import { Users, FolderKanban, Receipt, FileStack } from "lucide-react"
 import { useState } from "react"
 
 export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
   const { toast } = useToast()
   const [loadingClients, setLoadingClients] = useState(false)
   const [loadingProjects, setLoadingProjects] = useState(false)
+  const [loadingInvoices, setLoadingInvoices] = useState(false)
+  const [loadingRevisions, setLoadingRevisions] = useState(false)
 
   const addDummyClients = async () => {
     setLoadingClients(true)
     try {
-      // 10 diverse clients
       const dummyClients = [
         { name: 'Victoria Hayes', email: 'victoria.h@quantum.com', company: 'Quantum Digital', phone: '+1-555-0201', address: '852 Tech Valley, San Jose, CA 95110', payment_terms: 'Net 30' },
         { name: 'Christopher Park', email: 'chris.park@zenspace.com', company: 'ZenSpace Studios', phone: '+1-555-0202', address: '963 Creative Blvd, Brooklyn, NY 11201', payment_terms: 'Net 15' },
@@ -53,7 +54,6 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
   const addDummyProjects = async () => {
     setLoadingProjects(true)
     try {
-      // Get existing users for assignment (optional)
       const { data: users } = await supabase
         .from('users')
         .select('id, role')
@@ -62,7 +62,6 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
       const leadUser = users?.find(u => u.role === 'Lead') || users?.[0]
       const designerUser = users?.find(u => u.role === 'Designer') || users?.[1] || users?.[0]
 
-      // Dummy clients and projects data
       const clientNames = [
         { name: 'Victoria Hayes', email: 'victoria.h@quantum.com' },
         { name: 'Christopher Park', email: 'chris.park@zenspace.com' },
@@ -109,7 +108,6 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
         }
       })
 
-      // Insert projects
       const { error: projectError } = await supabase
         .from('projects')
         .insert(dummyProjects)
@@ -133,8 +131,179 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
     }
   }
 
+  const addDummyInvoices = async () => {
+    setLoadingInvoices(true)
+    try {
+      // Get existing clients
+      const { data: clients } = await supabase
+        .from('clients')
+        .select('id, name')
+        .limit(10)
+
+      if (!clients || clients.length === 0) {
+        toast({
+          title: 'No clients found',
+          description: 'Please add clients first before creating invoices.',
+          variant: 'destructive'
+        })
+        return
+      }
+
+      // Get existing projects (optional linking)
+      const { data: projects } = await supabase
+        .from('projects')
+        .select('id')
+        .limit(10)
+
+      const statuses = ['draft', 'sent', 'paid', 'overdue', 'cancelled']
+      const dummyInvoices = []
+
+      for (let i = 0; i < 10; i++) {
+        const client = clients[i % clients.length]
+        const project = projects?.[i % (projects?.length || 1)]
+        const issueDate = new Date()
+        issueDate.setDate(issueDate.getDate() - Math.floor(Math.random() * 30))
+        const dueDate = new Date(issueDate)
+        dueDate.setDate(dueDate.getDate() + 30)
+        
+        const subtotal = Math.floor(Math.random() * 5000) + 500
+        const taxRate = 10
+        const taxAmount = subtotal * (taxRate / 100)
+        const total = subtotal + taxAmount
+
+        dummyInvoices.push({
+          invoice_number: `INV-2025-${String(Math.floor(Math.random() * 9000) + 1000)}`,
+          client_id: client.id,
+          project_id: project?.id || null,
+          issue_date: issueDate.toISOString().split('T')[0],
+          due_date: dueDate.toISOString().split('T')[0],
+          subtotal,
+          tax_rate: taxRate,
+          tax_amount: taxAmount,
+          total,
+          status: statuses[Math.floor(Math.random() * statuses.length)],
+          notes: `Invoice for ${client.name} - Service ${i + 1}`
+        })
+      }
+
+      const { data: insertedInvoices, error: invoiceError } = await supabase
+        .from('invoices')
+        .insert(dummyInvoices)
+        .select()
+
+      if (invoiceError) throw invoiceError
+
+      // Add invoice items for each invoice
+      const invoiceItems = []
+      for (const invoice of insertedInvoices || []) {
+        const itemCount = Math.floor(Math.random() * 3) + 1
+        for (let j = 0; j < itemCount; j++) {
+          const rate = Math.floor(Math.random() * 200) + 50
+          const quantity = Math.floor(Math.random() * 10) + 1
+          invoiceItems.push({
+            invoice_id: invoice.id,
+            description: ['Design Services', 'Consultation', 'Revisions', 'Project Management', 'Asset Creation'][Math.floor(Math.random() * 5)],
+            quantity,
+            rate,
+            amount: rate * quantity
+          })
+        }
+      }
+
+      if (invoiceItems.length > 0) {
+        await supabase.from('invoice_items').insert(invoiceItems)
+      }
+
+      toast({
+        title: 'Success',
+        description: `Added ${insertedInvoices?.length || 0} new invoices`
+      })
+
+      onDataAdded?.()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add invoices',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoadingInvoices(false)
+    }
+  }
+
+  const addDummyRevisions = async () => {
+    setLoadingRevisions(true)
+    try {
+      // Get existing projects
+      const { data: projects } = await supabase
+        .from('projects')
+        .select('id, project_code')
+        .limit(10)
+
+      if (!projects || projects.length === 0) {
+        toast({
+          title: 'No projects found',
+          description: 'Please add projects first before creating revisions.',
+          variant: 'destructive'
+        })
+        return
+      }
+
+      const statuses = ['Draft', 'Pending Review', 'Approved', 'Rejected']
+      const notes = [
+        'Initial design concept based on brief requirements.',
+        'Updated color palette per client feedback.',
+        'Revised typography and layout adjustments.',
+        'Final version with all requested changes.',
+        'Minor tweaks to spacing and alignment.',
+        'Added alternative version for comparison.',
+        'Incorporated brand guidelines update.',
+        'High-resolution export for print.',
+        'Web-optimized version with compressed assets.',
+        'Client-approved final delivery.'
+      ]
+
+      const dummyRevisions = []
+      
+      for (let i = 0; i < 10; i++) {
+        const project = projects[i % projects.length]
+        const versionNo = Math.floor(Math.random() * 5) + 1
+        
+        dummyRevisions.push({
+          project_id: project.id,
+          version_no: versionNo,
+          file_url: `https://example.com/files/${project.project_code}/v${versionNo}/design.pdf`,
+          status: statuses[Math.floor(Math.random() * statuses.length)],
+          note: notes[i]
+        })
+      }
+
+      const { data: insertedRevisions, error: revisionError } = await supabase
+        .from('revisions')
+        .insert(dummyRevisions)
+        .select()
+
+      if (revisionError) throw revisionError
+
+      toast({
+        title: 'Success',
+        description: `Added ${insertedRevisions?.length || 0} new revisions`
+      })
+
+      onDataAdded?.()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add revisions',
+        variant: 'destructive'
+      })
+    } finally {
+      setLoadingRevisions(false)
+    }
+  }
+
   return (
-    <div className="flex gap-2">
+    <div className="flex flex-wrap gap-2">
       <Button 
         onClick={addDummyClients} 
         disabled={loadingClients}
@@ -152,6 +321,24 @@ export function AddDummyData({ onDataAdded }: { onDataAdded?: () => void }) {
       >
         <FolderKanban className="h-4 w-4 mr-2" />
         {loadingProjects ? 'Adding...' : 'Add 10 Projects'}
+      </Button>
+      <Button 
+        onClick={addDummyInvoices} 
+        disabled={loadingInvoices}
+        variant="outline"
+        size="sm"
+      >
+        <Receipt className="h-4 w-4 mr-2" />
+        {loadingInvoices ? 'Adding...' : 'Add 10 Invoices'}
+      </Button>
+      <Button 
+        onClick={addDummyRevisions} 
+        disabled={loadingRevisions}
+        variant="outline"
+        size="sm"
+      >
+        <FileStack className="h-4 w-4 mr-2" />
+        {loadingRevisions ? 'Adding...' : 'Add 10 Revisions'}
       </Button>
     </div>
   )
