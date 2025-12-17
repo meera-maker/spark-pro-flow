@@ -16,7 +16,6 @@ import { useToast } from "@/hooks/use-toast"
 import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit, CalendarIcon, X, Building2 } from "lucide-react"
 import { Database } from "@/integrations/supabase/types"
 import { QuickAddProjectDialog } from "@/components/quick-add-project-dialog"
-import { AddDummyData } from "@/components/add-dummy-data"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
@@ -310,8 +309,6 @@ export function ProjectsDashboard() {
         </div>
         
         <div className="flex flex-wrap gap-2">
-          <AddDummyData onDataAdded={fetchProjects} />
-          
           {/* Add Client Dialog */}
           <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
             <DialogTrigger asChild>
