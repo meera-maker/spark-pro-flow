@@ -13,7 +13,7 @@ import { useWorkflow } from "@/hooks/useWorkflow"
 import { WorkflowStatus } from "@/types/workflow"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit, CalendarIcon, X, Building2 } from "lucide-react"
+import { Search, Filter, Plus, Eye, Calendar, User, AlertCircle, Bell, Edit, CalendarIcon, X, Building2, FlaskConical } from "lucide-react"
 import { Database } from "@/integrations/supabase/types"
 import { QuickAddProjectDialog } from "@/components/quick-add-project-dialog"
 import { format } from "date-fns"
@@ -36,6 +36,7 @@ export function ProjectsDashboard() {
   const [loading, setLoading] = useState(true)
   const [isAddClientOpen, setIsAddClientOpen] = useState(false)
   const [clientLoading, setClientLoading] = useState(false)
+  const [testDataLoading, setTestDataLoading] = useState(false)
   const [clientForm, setClientForm] = useState({
     name: '',
     email: '',
@@ -155,6 +156,56 @@ export function ProjectsDashboard() {
       })
     } finally {
       setClientLoading(false)
+    }
+  }
+
+  const addTestData = async () => {
+    setTestDataLoading(true)
+    try {
+      // Add a test client
+      const { data: clientData, error: clientError } = await supabase
+        .from('clients')
+        .insert([{
+          name: 'Test Client',
+          email: `test${Date.now()}@example.com`,
+          company: 'Test Company Ltd',
+          phone: '+1 555-0199'
+        }])
+        .select()
+        .single()
+
+      if (clientError) throw clientError
+
+      // Add a test project linked to the client
+      const { error: projectError } = await supabase
+        .from('projects')
+        .insert([{
+          client_name: clientData.name,
+          client_email: clientData.email,
+          creative_type: 'Logo Design',
+          deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          brief: `Test project for ${clientData.name}`,
+          status: 'New',
+          project_code: `TEST-${Date.now()}`
+        }])
+
+      if (projectError) throw projectError
+
+      toast({
+        title: 'Success',
+        description: 'Test client and project added successfully'
+      })
+
+      fetchClients()
+      fetchProjects()
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add test data',
+        variant: 'destructive'
+      })
+    } finally {
+      setTestDataLoading(false)
     }
   }
 
@@ -371,6 +422,15 @@ export function ProjectsDashboard() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          
+          <Button 
+            variant="outline" 
+            onClick={addTestData} 
+            disabled={testDataLoading}
+          >
+            <FlaskConical className="h-4 w-4 mr-2" />
+            {testDataLoading ? 'Adding...' : 'Add Test Data'}
+          </Button>
           
           <QuickAddProjectDialog onProjectAdded={fetchProjects} />
           <Link to="/intake">
